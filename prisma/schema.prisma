@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrganizationsType {
+  CHURCH
+  SCHOOL
+  COMPANY
+}
+
+model Organizations {
+  id String @unique @default(uuid())
+  name String
+  type OrganizationsType
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  attendees Attendees[]
+
+  @@map("organizations")
+}
+
+model Attendees {
+  id String @unique @default(uuid())
+  firstName String @map("first_name")
+  lastName String @map("last_name")
+  age Int?
+  email String?
+  status String?
+  address String?
+  birthday String?
+  facebookName String? @map("facebook_name")
+  facebookLink String? @map("facebook_link")
+  cellLeader String? @map("cell_leader")
+  network String?
+  churchHierarchy String? @map("church_hierarchy")
+  memberStatus String? @map("member_status")
+  churchProcess String? @map("church_process")
+  gradeLevel String? @map("grade_level")
+  section String?
+  position String?
+  hourlyRate Int? @map("hourly_rate")
+  department String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organizationId String @map("organization_id")
+  organization Organizations @relation(fields: [organizationId], references: [id])
+  
+  @@map("attendees")
+}
