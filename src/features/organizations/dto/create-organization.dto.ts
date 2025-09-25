@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsString } from "class-validator"
-import { OrganizationsType } from "generated/prisma"
+import { OrganizationsType } from "@prisma/client"
 
 export class CreateOrganizationDTO {
   @IsNotEmpty()
