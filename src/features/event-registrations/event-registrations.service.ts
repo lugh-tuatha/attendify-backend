@@ -38,6 +38,7 @@ export class EventRegistrationsService {
               firstName: true,
               lastName: true,
               primaryLeader: true,
+              churchHierarchy: true,
               memberStatus: true,
             } 
           },
@@ -54,6 +55,7 @@ export class EventRegistrationsService {
           firstName: reg.firstName ?? reg.attendee?.firstName ?? '',
           lastName: reg.lastName ?? reg.attendee?.lastName ?? '',
           primaryLeader: reg.primaryLeader ?? reg.attendee?.primaryLeader ?? 'N/A',
+          churchHierarchy: reg.churchHierarchy ?? reg.attendee?.churchHierarchy ?? 'Unspecified',
           memberStatus: reg.memberStatus ?? reg.attendee?.memberStatus ?? 'Unspecified',
         }
       })

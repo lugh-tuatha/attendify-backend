@@ -71,6 +71,7 @@ model Attendees {
 model Events {
   id String @unique @default(uuid())
   name String
+  image String
   description String
   tagline String
   location String
@@ -146,6 +147,7 @@ model EventRegistrations {
   lastName String? @map("last_name")
   invitedBby String? @map("invited_bby")
   primaryLeader String? @map("primary_leader")
+  churchHierarchy String? @map("church_hierarchy")
   memberStatus String? @map("member_status")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

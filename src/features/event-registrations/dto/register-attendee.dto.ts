@@ -27,5 +27,9 @@ export class RegisterAttendeeDTO {
 
   @IsOptional()
   @IsString()
+  churchHierarchy: string
+
+  @IsOptional()
+  @IsString()
   memberStatus: string
 }

@@ -7,6 +7,10 @@ export class CreateEventDTO {
 
   @IsNotEmpty()
   @IsString()
+  image: string;
+
+  @IsNotEmpty()
+  @IsString()
   description: string;
 
   @IsNotEmpty()

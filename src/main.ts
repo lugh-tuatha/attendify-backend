@@ -9,7 +9,7 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v2');
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:4200', process.env.FRONTEND_URL],
+    origin: ['http://localhost:5173', 'http://localhost:4200', 'https://lthmi-attendify.netlify.app'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
