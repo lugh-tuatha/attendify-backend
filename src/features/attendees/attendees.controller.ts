@@ -9,7 +9,7 @@ import { CreateAttendeeResponse } from './types/create-attendee.response';
 import { DeleteAttendeeResponse } from './types/delete-attendee.response';
 import { UpdateAttendeeResponse } from './types/update-attendee.response';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
-
+import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
 
 @Controller('attendees')
 export class AttendeesController {
@@ -25,8 +25,16 @@ export class AttendeesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all attendees' })
-  async getAllAttendees(): Promise<GetAllAttendeesResponse>  {  
+  async getAllAttendees(): Promise<GetAllAttendeesResponse  >  {  
     return this.attendeesService.getAllAttendees();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get attendee by id' })
+  async getAttendeeById(
+    @Param('id') id: string
+  ) : Promise<GetAttendeeByIdResponse> {
+    return this.attendeesService.getAttendeeById(id);
   }
 
   @Get('organization/:organizationId')

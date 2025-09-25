@@ -1,4 +1,4 @@
-import { IsEmail, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Min } from "class-validator"
+import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
 
 export class CreateAttendeeDTO {
   @IsNotEmpty()
@@ -45,6 +45,10 @@ export class CreateAttendeeDTO {
 
   @IsOptional()
   @IsString()
+  primaryLeader: string
+
+  @IsOptional()
+  @IsString()
   network: string
 
   @IsOptional()
@@ -80,6 +84,6 @@ export class CreateAttendeeDTO {
   department: string
 
   @IsNotEmpty()
-  @IsString()
+  @IsUUID()
   organizationId: string
 }

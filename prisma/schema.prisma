@@ -28,6 +28,9 @@ model Organizations {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   attendees Attendees[]
+  events Events[]
+  attendanceTypes AttendanceTypes[]
+  attendance Attendance[]
 
   @@map("organizations")
 }
@@ -44,6 +47,7 @@ model Attendees {
   facebookName String? @map("facebook_name")
   facebookLink String? @map("facebook_link")
   cellLeader String? @map("cell_leader")
+  primaryLeader String? @map("primary_leader")
   network String?
   churchHierarchy String? @map("church_hierarchy")
   memberStatus String? @map("member_status")
@@ -58,6 +62,94 @@ model Attendees {
 
   organizationId String @map("organization_id")
   organization Organizations @relation(fields: [organizationId], references: [id])
-  
+
+  attendance Attendance[]
+  eventRegistrations EventRegistrations[]
+
   @@map("attendees")
+}
+
+model Events {
+  id String @unique @default(uuid())
+  name String
+  description String
+  tagline String
+  location String
+  startDate DateTime @map("start_date")
+  endDate DateTime @map("end_date")
+  startTime DateTime @map("start_time")
+  endTime DateTime @map("end_time")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  organizationId String @map("organization_id")
+  organization Organizations @relation(fields: [organizationId], references: [id])
+
+  attendanceTypes AttendanceTypes[]
+  events Attendance[]
+  eventRegistrations EventRegistrations[]
+
+  @@map("events")
+}
+
+model AttendanceTypes {
+  id String @unique @default(uuid())
+  name String
+  startTime DateTime @map("start_time")
+  endTime DateTime @map("end_time")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  eventId String? @map("event_id")
+  event Events? @relation(fields: [eventId], references: [id])
+
+  organizationId String @map("organization_id")
+  organization Organizations @relation(fields: [organizationId], references: [id])
+
+  attendance Attendance[]
+
+  @@map("attendance_types")
+}
+
+model Attendance {
+  id String @unique @default(uuid())
+  timeIn DateTime @map("time_in")
+  timeOut DateTime? @map("time_out")
+  weekNumber Int @map("week_number")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  attendeeId String @map("attendee_id")
+  attendee Attendees @relation(fields: [attendeeId], references: [id])
+
+  attendanceTypeId String @map("attendance_type_id")
+  attendanceType AttendanceTypes @relation(fields: [attendanceTypeId], references: [id])
+
+  eventId String? @map("event_id")
+  event Events? @relation(fields: [eventId], references: [id])
+
+  organizationId String @map("organization_id")
+  organization Organizations @relation(fields: [organizationId], references: [id])
+
+  @@map("attendance")
+}
+
+model EventRegistrations {
+  id String @unique @default(uuid())
+
+  eventId String @map("event_id")
+  event Events @relation(fields: [eventId], references: [id])
+
+  attendeeId String? @map("attendee_id")
+  attendee Attendees? @relation(fields: [attendeeId], references: [id])
+
+  firstName String? @map("first_name")
+  lastName String? @map("last_name")
+  invitedBby String? @map("invited_bby")
+  primaryLeader String? @map("primary_leader")
+  memberStatus String? @map("member_status")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("event_registrations")
 }

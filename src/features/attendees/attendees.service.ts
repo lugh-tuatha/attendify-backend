@@ -7,6 +7,7 @@ import { GetAllAttendeesResponse } from './types/get-all-attendees.response';
 import { DeleteAttendeeResponse } from './types/delete-attendee.response';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { UpdateAttendeeResponse } from './types/update-attendee.response';
+import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
 
 @Injectable()
 export class AttendeesService {
@@ -41,6 +42,27 @@ export class AttendeesService {
     } catch (error) {
       console.error('Error fetching attendees:', error);
       throw new InternalServerErrorException('Failed to fetch attendees');
+    }
+  }
+
+  async getAttendeeById(id: string): Promise<GetAttendeeByIdResponse> {
+    try {
+      const attendee = await this.prisma.attendees.findUnique({
+        where: { id },
+      })
+
+      if (!attendee) {
+        throw new NotFoundException('Attendee not found');
+      }
+
+      return {
+        status: 200,
+        message: 'Attendee found successfully.',
+        data: attendee,
+      }
+    } catch (error) {
+      console.error('Error fetching attendee:', error);
+      throw new InternalServerErrorException('Failed to fetch attendee');
     }
   }
 

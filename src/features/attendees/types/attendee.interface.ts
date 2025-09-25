@@ -10,6 +10,7 @@ export interface Attendee {
   facebookName: string | null;
   facebookLink: string | null;
   cellLeader: string | null;
+  primaryLeader: string | null;
   network: string | null;
   churchHierarchy: string | null;
   memberStatus: string | null;
