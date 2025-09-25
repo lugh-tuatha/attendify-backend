@@ -1,11 +1,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { PrismaService } from 'src/shared/database/prisma.service';
+
+import { CreateAttendeeDTO } from './dto/create-attendee.dto';
+import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 
 import { CreateAttendeeResponse } from './types/create-attendee.response';
 import { GetAllAttendeesResponse } from './types/get-all-attendees.response';
 import { DeleteAttendeeResponse } from './types/delete-attendee.response';
-import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { UpdateAttendeeResponse } from './types/update-attendee.response';
 import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
 

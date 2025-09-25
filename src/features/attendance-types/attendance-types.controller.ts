@@ -1,8 +1,10 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { AttendanceTypesService } from './attendance-types.service';
 import { ApiOperation } from '@nestjs/swagger';
-import { CreateAttendanceTypeResponse } from './types/create-attendance-type.response';
+import { AttendanceTypesService } from './attendance-types.service';
+
 import { CreateAttendanceTypeDTO } from './dto/create-attendance-type.dto';
+
+import { CreateAttendanceTypeResponse } from './types/create-attendance-type.response';
 import { GetAllAttendanceTypesResponse } from './types/get-all-attendance-types.response';
 
 @Controller('attendance-types')

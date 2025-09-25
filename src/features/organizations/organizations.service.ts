@@ -1,7 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
-import { CreateOrganizationDTO } from './dto/create-organization.dto';
 
+import { CreateOrganizationDTO } from './dto/create-organization.dto';
 import { CreateOrganizationResponse } from './types/create-organization.response';
 import { GetAllOrganizationsResponse } from './types/get-all-organizations.response';
 

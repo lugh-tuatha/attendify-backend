@@ -1,10 +1,12 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { CreateAttendanceResponse } from './types/create-attendance.response';
-import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { PrismaService } from 'src/shared/database/prisma.service';
-import { GetAllAttendanceByOrganizationAndAttendanceTypeResponse } from './types/get-all-attendance-by-organization-and-attendance-type.response';
-import { DeleteAttendanceResponse } from './types/delete-attendance.response';
+
+import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { updateAttendanceDTO } from './dto/update-attendance.dto';
+
+import { CreateAttendanceResponse } from './types/create-attendance.response';
+import { GetAllAttendanceByOrgAndTypeResponse } from './types/get-all-attendance-by-org-and-type.response';
+import { DeleteAttendanceResponse } from './types/delete-attendance.response';
 import { UpdateAttendanceResponse } from './types/update-attendance.response';
 
 @Injectable()
@@ -28,7 +30,7 @@ export class AttendanceService {
     }
   }
 
-  async getAllAttendanceByOrganizationAndAttendanceType(organizationId: string, attendanceTypeId: string, weekNumber: number, memberStatus?: string): Promise<GetAllAttendanceByOrganizationAndAttendanceTypeResponse> {
+  async getAllAttendanceByOrganizationAndAttendanceType(organizationId: string, attendanceTypeId: string, weekNumber: number, memberStatus?: string): Promise<GetAllAttendanceByOrgAndTypeResponse> {
     try {
       const attendance = await this.prisma.attendance.findMany({
         where: {

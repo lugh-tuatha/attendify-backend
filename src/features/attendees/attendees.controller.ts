@@ -1,14 +1,14 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
+import { AttendeesService } from './attendees.service';
 
 import { CreateAttendeeDTO } from './dto/create-attendee.dto';
-import { AttendeesService } from './attendees.service';
+import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 
 import { GetAllAttendeesResponse } from './types/get-all-attendees.response';
 import { CreateAttendeeResponse } from './types/create-attendee.response';
 import { DeleteAttendeeResponse } from './types/delete-attendee.response';
 import { UpdateAttendeeResponse } from './types/update-attendee.response';
-import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
 
 @Controller('attendees')

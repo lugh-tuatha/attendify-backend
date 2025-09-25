@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { EventRegistrationsService } from './event-registrations.service';
 import { ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { EventRegistrationsService } from './event-registrations.service';
+
 import { RegisterAttendeeDTO } from './dto/register-attendee.dto';
 import { RegisterAttendeeResponse } from './types/register-attendee.response';
 import { GetAllRegisteredAttendeeResponse } from './types/get-all-registered-attendee.response';

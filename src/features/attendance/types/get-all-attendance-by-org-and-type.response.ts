@@ -1,7 +1,7 @@
 
 import { Attendance } from "./attendance.inteface";
 
-export interface GetAllAttendanceByOrganizationAndAttendanceTypeResponse {
+export interface GetAllAttendanceByOrgAndTypeResponse {
   status: number;
   message: string;
   results: number;

@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
+
 import { CreateEventDTO } from './dto/create-event.dto';
 import { CreateEventResponse } from './types/create-event.response';
 import { GetAllEventResponse } from './types/get-all-events.response';

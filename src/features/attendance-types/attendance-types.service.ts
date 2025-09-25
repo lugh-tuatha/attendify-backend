@@ -1,6 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
+
 import { CreateAttendanceTypeDTO } from './dto/create-attendance-type.dto';
+
 import { CreateAttendanceTypeResponse } from './types/create-attendance-type.response';
 import { GetAllAttendanceTypesResponse } from './types/get-all-attendance-types.response';
 

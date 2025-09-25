@@ -1,7 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { PrismaService } from 'src/shared/database/prisma.service';
+
 import { RegisterAttendeeDTO } from './dto/register-attendee.dto';
 import { RegisterAttendeeResponse } from './types/register-attendee.response';
-import { PrismaService } from 'src/shared/database/prisma.service';
 import { GetAllRegisteredAttendeeResponse } from './types/get-all-registered-attendee.response';
 
 @Injectable()
