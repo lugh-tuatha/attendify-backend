@@ -44,7 +44,18 @@ export class AttendanceService {
             select: {
               firstName: true,
               lastName: true,
+              department: true,
               cellLeader: true,
+              memberStatus: true,
+            }
+          },
+          eventRegistration: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              primaryLeader: true,
+              churchHierarchy: true,
               memberStatus: true,
             }
           }

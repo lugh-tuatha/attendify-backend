@@ -1,9 +1,13 @@
 import { IsDateString, IsNotEmpty, Min, IsUUID, IsNumber, IsOptional } from "class-validator";
 
 export class CreateAttendanceDTO {
-  @IsNotEmpty()
+  @IsOptional()
   @IsUUID()
   attendeeId: string;
+
+  @IsOptional()
+  @IsUUID()
+  eventRegistrationId: string;
 
   @IsNotEmpty()
   @IsDateString()

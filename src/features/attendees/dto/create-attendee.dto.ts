@@ -72,12 +72,16 @@ export class CreateAttendeeDTO {
 
   @IsOptional()
   @IsString()
-  position: string
+  positionTitle: string
 
   @IsOptional()
   @IsInt()
   @Min(0)
-  hourlyRate: number
+  salary: number
+
+  @IsOptional()
+  @IsUUID()
+  payrollId: string
 
   @IsOptional()
   @IsString()
@@ -86,4 +90,4 @@ export class CreateAttendeeDTO {
   @IsNotEmpty()
   @IsUUID()
   organizationId: string
-}
+} 

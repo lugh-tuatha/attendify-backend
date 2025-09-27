@@ -17,9 +17,9 @@ export class AttendanceController {
   @Post()
   @ApiOperation({ summary: 'Create an attendance' })
   async createAttendance(
-    @Body() CreateAttendanceDTO: CreateAttendanceDTO,
+    @Body() createAttendanceDTO: CreateAttendanceDTO,
   ): Promise<CreateAttendanceResponse> {
-    return this.attendanceService.createAttendance(CreateAttendanceDTO);
+    return this.attendanceService.createAttendance(createAttendanceDTO);
   }
 
   @Get('organization/:organizationId/attendance-type/:attendanceTypeId')

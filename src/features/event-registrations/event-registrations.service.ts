@@ -35,6 +35,7 @@ export class EventRegistrationsService {
         include: {
           attendee: {
             select: {
+              id: true,
               firstName: true,
               lastName: true,
               primaryLeader: true,
@@ -52,6 +53,7 @@ export class EventRegistrationsService {
 
       const transformedResponse = events.map((reg) => {
         return {
+          id: reg.id ?? reg.attendee?.id ?? '',
           firstName: reg.firstName ?? reg.attendee?.firstName ?? '',
           lastName: reg.lastName ?? reg.attendee?.lastName ?? '',
           primaryLeader: reg.primaryLeader ?? reg.attendee?.primaryLeader ?? 'N/A',

@@ -53,9 +53,10 @@ model Attendees {
   churchProcess String? @map("church_process")
   gradeLevel String? @map("grade_level")
   section String?
-  position String?
-  hourlyRate Int? @map("hourly_rate")
+  positionTitle String? @map("position_title")
+  salary Int? @map("salary")
   department String?
+  payrollId String? @map("payroll_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -65,6 +66,7 @@ model Attendees {
   attendance Attendance[]
   eventRegistrations EventRegistrations[]
 
+  @@unique([firstName, lastName])
   @@map("attendees")
 }
 
@@ -115,12 +117,16 @@ model Attendance {
   id String @unique @default(uuid())
   timeIn DateTime @map("time_in")
   timeOut DateTime? @map("time_out")
+  presenceDuration Int? @map("presence_duration")
   weekNumber Int @map("week_number")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  attendeeId String @map("attendee_id")
-  attendee Attendees @relation(fields: [attendeeId], references: [id])
+  attendeeId String? @map("attendee_id")
+  attendee Attendees? @relation(fields: [attendeeId], references: [id])
+
+  eventRegistrationId String? @map("event_registration_id")
+  eventRegistration EventRegistrations? @relation(fields: [eventRegistrationId], references: [id])
 
   attendanceTypeId String @map("attendance_type_id")
   attendanceType AttendanceTypes @relation(fields: [attendanceTypeId], references: [id])
@@ -152,5 +158,8 @@ model EventRegistrations {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  attendance Attendance[]
+
+  @@unique([firstName, lastName])
   @@map("event_registrations")
 }

@@ -1,6 +1,7 @@
 export interface Attendance {
   id: string;
-  attendeeId: string;
+  attendeeId: string | null;
+  eventRegistrationId: string | null;
   timeIn: Date;
   timeOut: Date | null;
   weekNumber: number;

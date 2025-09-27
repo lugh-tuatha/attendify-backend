@@ -17,8 +17,9 @@ export interface Attendee {
   churchProcess: string | null;
   gradeLevel: string | null;
   section: string | null;
-  position: string | null;
-  hourlyRate: number | null;
+  positionTitle: string | null;
+  salary: number | null;
+  payrollId: string | null;
   department: string | null;
   createdAt: Date;
   updatedAt: Date;
