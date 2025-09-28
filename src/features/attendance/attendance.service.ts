@@ -64,12 +64,13 @@ export class AttendanceService {
 
         const transformedResponse = attendance.map((reg) => {
         return {
-          id: reg.id ?? reg.eventRegistration?.id ?? '',
+          id: reg.eventRegistration?.id ?? '',
           firstName: reg.eventRegistration?.firstName ?? '',
           lastName: reg.eventRegistration?.lastName ?? '',
           primaryLeader: reg.eventRegistration?.primaryLeader ?? 'N/A',
           churchHierarchy: reg.eventRegistration?.churchHierarchy ?? 'Unspecified',
           memberStatus: reg.eventRegistration?.memberStatus ?? 'Unspecified',
+          timeIn: reg.timeIn ?? 'Unspecified',
         }
       })
 
