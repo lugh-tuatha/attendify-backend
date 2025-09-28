@@ -13,9 +13,9 @@ export interface EventRegistration {
 }
 
 export interface LTHMIProfile {
-  firstName: string;
-  lastName: string;
-  primaryLeader: string;
-  churchHierarchy: string;
-  memberStatus: string;
+  firstName: string | null;
+  lastName: string | null;
+  primaryLeader: string | null;
+  churchHierarchy: string | null;
+  memberStatus: string | null;
 }

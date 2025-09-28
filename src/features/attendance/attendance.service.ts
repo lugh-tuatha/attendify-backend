@@ -62,11 +62,22 @@ export class AttendanceService {
         }
       });
 
+        const transformedResponse = attendance.map((reg) => {
+        return {
+          id: reg.id ?? reg.eventRegistration?.id ?? '',
+          firstName: reg.eventRegistration?.firstName ?? '',
+          lastName: reg.eventRegistration?.lastName ?? '',
+          primaryLeader: reg.eventRegistration?.primaryLeader ?? 'N/A',
+          churchHierarchy: reg.eventRegistration?.churchHierarchy ?? 'Unspecified',
+          memberStatus: reg.eventRegistration?.memberStatus ?? 'Unspecified',
+        }
+      })
+
       return {
         status: 200,
         message: 'Attendance fetched successfully.',
         results: attendance.length,
-        data: attendance,
+        data: transformedResponse,
       }
     } catch (error) {
       console.error('Error fetching attendance:', error);
