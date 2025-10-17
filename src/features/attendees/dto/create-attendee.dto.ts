@@ -1,4 +1,4 @@
-import { IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
+import { IsArray, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
 
 export class CreateAttendeeDTO {
   @IsNotEmpty()
@@ -8,6 +8,10 @@ export class CreateAttendeeDTO {
   @IsNotEmpty()
   @IsString()
   lastName: string
+
+  @IsArray()
+  @IsOptional()
+  embedding: string
 
   @IsOptional()
   @IsInt()

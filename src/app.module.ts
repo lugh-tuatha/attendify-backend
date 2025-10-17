@@ -7,9 +7,20 @@ import { AttendanceModule } from './features/attendance/attendance.module';
 import { EventsModule } from './features/events/events.module';
 import { AttendanceTypesModule } from './features/attendance-types/attendance-types.module';
 import { EventRegistrationsModule } from './features/event-registrations/event-registrations.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [AttendeesModule, OrganizationsModule, AttendanceModule, EventsModule, AttendanceTypesModule, EventRegistrationsModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    AttendeesModule, 
+    OrganizationsModule, 
+    AttendanceModule, 
+    EventsModule, 
+    AttendanceTypesModule, 
+    EventRegistrationsModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

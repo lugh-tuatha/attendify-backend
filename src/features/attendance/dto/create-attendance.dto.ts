@@ -22,6 +22,10 @@ export class CreateAttendanceDTO {
   @Min(1)
   weekNumber: number;
 
+  @IsOptional()
+  @IsNumber()
+  hoursWorked: number;
+
   @IsNotEmpty()
   @IsUUID()
   attendanceTypeId: string;

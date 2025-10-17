@@ -9,6 +9,8 @@ import { GetAllAttendeesResponse } from './types/get-all-attendees.response';
 import { DeleteAttendeeResponse } from './types/delete-attendee.response';
 import { UpdateAttendeeResponse } from './types/update-attendee.response';
 import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
+import { GetAllAttendeesForRecognitionResponse } from './types/get-all-attendees-for-recognition.response';
+import { AttendeeForRecognition } from './types/attendee-for-recognition';
 
 @Injectable()
 export class AttendeesService {
@@ -31,13 +33,37 @@ export class AttendeesService {
     }
   }
 
-  async getAllAttendees(): Promise<GetAllAttendeesResponse> {
+  async getAllAttendees(): Promise<GetAllAttendeesResponse>   {
     try {
       const attendees = await this.prisma.attendees.findMany();
 
       return {
         status: 200,
         results: attendees.length,
+        data: attendees,
+      }
+    } catch (error) {
+      console.error('Error fetching attendees:', error);
+      throw new InternalServerErrorException('Failed to fetch attendees');
+    }
+  }
+
+  async getAllAttendeesForRecognition(organizationId: string): Promise<GetAllAttendeesForRecognitionResponse> {
+    try {
+      const attendeesFromDB = await this.prisma.$queryRaw<any[]>`
+        SELECT id, "first_name", "last_name", embedding::text AS embedding 
+        FROM "attendees"
+        WHERE "organization_id" = ${organizationId}
+      `;
+
+      const attendees: AttendeeForRecognition[] = attendeesFromDB.map(attendee => ({
+        ...attendee,
+        embedding: JSON.parse(attendee.embedding)
+      }));
+
+      return {
+        status: 200,
+        results: attendees.length,  
         data: attendees,
       }
     } catch (error) {

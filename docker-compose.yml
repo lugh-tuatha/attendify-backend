@@ -1,0 +1,43 @@
+services:
+  postgres_db:
+    image: ankane/pgvector:latest
+    restart: always
+    container_name: postgres-db-container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: attendify
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  nestjs_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    container_name: nestjs-api-container
+    depends_on:
+      - postgres_db
+    environment:
+      DATABASE_URL: postgresql://postgres:password@postgres_db:5432/attendify?schema=public
+      FACE_RECOGNITION_API_URL: http://fastapi_service:5000/recognize-base64
+      PORT: 3000
+
+  fastapi_service:
+    build:
+      context: /home/ace/PycharmProjects/attendify-microservice
+    restart: always
+    container_name: fastapi-microservice-container
+    ports:
+      - "5000:5000"
+    depends_on:
+      - nestjs_api
+    environment:
+      NESTJS_BASE_API_URL: http://nestjs_api:3000/api/v2/
+
+volumes:
+  db_data:
+    driver: local

@@ -5,6 +5,7 @@ export interface Attendance {
   timeIn: Date;
   timeOut: Date | null;
   weekNumber: number;
+  hoursWorked: number | null;
   attendanceTypeId: string;
   eventId: string | null;
   organizationId: string;
