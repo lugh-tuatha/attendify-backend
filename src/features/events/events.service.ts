@@ -3,7 +3,6 @@ import { PrismaService } from 'src/shared/database/prisma.service';
 import { Events, Prisma } from '@prisma/client';
 
 import { CreateEventDTO } from './dto/create-event.dto';
-import { EventRegistrations } from 'generated/prisma';
 
 @Injectable()
 export class EventsService {
