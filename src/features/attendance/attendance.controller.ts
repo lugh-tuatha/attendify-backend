@@ -1,17 +1,14 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
 
 import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
 import { CheckInByFaceDto } from './dto/check-in-by-face.dto';
 
-import { GetAllAttendanceByOrgAndTypeResponse } from './types/get-all-attendance-by-org-and-type.response';
-import { CreateAttendanceResponse } from './types/create-attendance.response';
-import { DeleteAttendanceResponse } from './types/delete-attendance.response';
-import { UpdateAttendanceResponse } from './types/update-attendance.response';
-import { GetAttendanceByIdResponse } from './types/get-attendance-by-id.response';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
+import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
+import { Attendance } from '@prisma/client'; 
 
 @Controller('attendance')
 export class AttendanceController {
@@ -21,7 +18,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Create an attendance' })
   async createAttendance(
     @Body() createAttendanceDTO: CreateAttendanceDTO,
-  ): Promise<CreateAttendanceResponse> {
+  ): Promise<Attendance> {
     return this.attendanceService.createAttendance(createAttendanceDTO);
   }
 
@@ -33,39 +30,36 @@ export class AttendanceController {
     return this.attendanceService.checkInByFace(recognitionDTO);
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Get all attendance with filters' })
+  async getAllAttendance(
+    @Query() filters: GetAllAttendanceDto
+  ): Promise<Attendance[]> {
+    return this.attendanceService.getAllAttendance(filters);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get attendance by id' })
   async getAttendeeById(
-    @Param('id') id: string
-  ) : Promise<GetAttendanceByIdResponse> {
+    @Param('id', ParseUUIDPipe) id: string
+  ) : Promise<Attendance> {
     return this.attendanceService.getAttendanceById(id);
-  }
-
-  @Get('organization/:organizationId/attendance-type/:attendanceTypeId')
-  @ApiOperation({ summary: 'Get all attendance by organization and attendance type' })
-  @ApiQuery({ name: 'week', required: true, type: Number, description: 'Filter by week number' })
-  async getAllAttendanceByOrganizationAndAttendanceType(
-    @Param('organizationId') organizationId: string,
-    @Param('attendanceTypeId') attendanceTypeId: string,
-    @Query('member-status') memberStatus?: string,
-    @Query('attendee-id') attendeeId?: string,
-    @Query('date') date?: string
-  ): Promise<GetAllAttendanceByOrgAndTypeResponse> {
-    return this.attendanceService.getAllAttendanceByOrganizationAndAttendanceType(organizationId, attendanceTypeId, memberStatus, attendeeId, date);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update an attendance' })
   async updateAttendance(
-    @Param('id') id: string, 
+    @Param('id', ParseUUIDPipe) id: string, 
     @Body() updateAttendanceDTO: UpdateAttendanceDTO
-  ): Promise<UpdateAttendanceResponse> {
+  ): Promise<Attendance> {
     return this.attendanceService.updateAttendance(id, updateAttendanceDTO);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an attendance' })
-  async deleteAttendance(@Param('id') id: string): Promise<DeleteAttendanceResponse> {
+  async deleteAttendance(
+    @Param('id', ParseUUIDPipe) id: string
+  ): Promise<Attendance> {
     return this.attendanceService.deleteAttendance(id)
   }
 }

@@ -74,23 +74,6 @@ export class CreateAttendeeDTO {
   @IsString()
   section: string
 
-  @IsOptional()
-  @IsString()
-  positionTitle: string
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  salary: number
-
-  @IsOptional()
-  @IsUUID()
-  payrollId: string
-
-  @IsOptional()
-  @IsString()
-  department: string
-
   @IsNotEmpty()
   @IsUUID()
   organizationId: string

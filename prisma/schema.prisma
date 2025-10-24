@@ -19,8 +19,13 @@ enum OrganizationsType {
   COMPANY
 }
 
+enum EventCategory {
+  RECURRING
+  SPECIAL
+}
+
 model Organizations {
-  id String @unique @default(uuid())
+  id String @id @default(uuid())
   name String
   type OrganizationsType
   createdAt DateTime @default(now()) @map("created_at")
@@ -28,14 +33,13 @@ model Organizations {
 
   attendees Attendees[]
   events Events[]
-  attendanceTypes AttendanceTypes[]
   attendance Attendance[]
 
   @@map("organizations")
 }
 
 model Attendees {
-  id String @unique @default(uuid())
+  id String @id @default(uuid())
   firstName String @map("first_name")
   lastName String @map("last_name")
   embedding Unsupported("vector(512)")?
@@ -54,10 +58,6 @@ model Attendees {
   churchProcess String? @map("church_process")
   gradeLevel String? @map("grade_level")
   section String?
-  positionTitle String? @map("position_title")
-  salary Int? @map("salary")
-  department String?
-  payrollId String? @map("payroll_id")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -72,14 +72,15 @@ model Attendees {
 }
 
 model Events {
-  id String @unique @default(uuid())
-  name String
+  id String @id @default(uuid())
+  name String?
   image String
   description String
   tagline String
   location String
-  startDate DateTime @map("start_date")
-  endDate DateTime @map("end_date")
+  category EventCategory
+  startDate DateTime? @map("start_date")
+  endDate DateTime? @map("end_date")
   startTime DateTime @map("start_time")
   endTime DateTime @map("end_time")
   createdAt DateTime @default(now()) @map("created_at")
@@ -88,50 +89,26 @@ model Events {
   organizationId String @map("organization_id")
   organization Organizations @relation(fields: [organizationId], references: [id])
 
-  attendanceTypes AttendanceTypes[]
   events Attendance[]
   eventRegistrations EventRegistrations[]
 
   @@map("events")
 }
 
-model AttendanceTypes {
-  id String @unique @default(uuid())
-  name String
-  startTime DateTime @map("start_time")
-  endTime DateTime @map("end_time")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  eventId String? @map("event_id")
-  event Events? @relation(fields: [eventId], references: [id])
-
-  organizationId String @map("organization_id")
-  organization Organizations @relation(fields: [organizationId], references: [id])
-
-  attendance Attendance[]
-
-  @@map("attendance_types")
-}
-
 model Attendance {
-  id String @unique @default(uuid())
+  id String @id @default(uuid())
   timeIn DateTime @map("time_in")
   timeOut DateTime? @map("time_out")
   presenceDuration Int? @map("presence_duration")
   weekNumber Int @map("week_number")
-  hoursWorked Int? @map("hours_worked")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  attendeeId String? @map("attendee_id")
-  attendee Attendees? @relation(fields: [attendeeId], references: [id])
+  attendeeId String @map("attendee_id")
+  attendee Attendees @relation(fields: [attendeeId], references: [id])
 
   eventRegistrationId String? @map("event_registration_id")
   eventRegistration EventRegistrations? @relation(fields: [eventRegistrationId], references: [id])
-
-  attendanceTypeId String @map("attendance_type_id")
-  attendanceType AttendanceTypes @relation(fields: [attendanceTypeId], references: [id])
 
   eventId String? @map("event_id")
   event Events? @relation(fields: [eventId], references: [id])
@@ -143,25 +120,20 @@ model Attendance {
 }
 
 model EventRegistrations {
-  id String @unique @default(uuid())
+  id String @id @default(uuid())
+  invitedBy String? @map("invited_by")
 
   eventId String @map("event_id")
   event Events @relation(fields: [eventId], references: [id])
 
-  attendeeId String? @map("attendee_id")
-  attendee Attendees? @relation(fields: [attendeeId], references: [id])
+  attendeeId String @map("attendee_id")
+  attendee Attendees @relation(fields: [attendeeId], references: [id])
 
-  firstName String? @map("first_name")
-  lastName String? @map("last_name")
-  invitedBby String? @map("invited_bby")
-  primaryLeader String? @map("primary_leader")
-  churchHierarchy String? @map("church_hierarchy")
-  memberStatus String? @map("member_status")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   attendance Attendance[]
 
-  @@unique([firstName, lastName])
+  @@unique([attendeeId, eventId])
   @@map("event_registrations")
 }

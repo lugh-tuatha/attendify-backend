@@ -1,11 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
+import { Organizations } from '@prisma/client';
 
 import { CreateOrganizationDTO } from './dto/create-organization.dto';
 import { OrganizationsService } from './organizations.service';
-
-import { CreateOrganizationResponse } from './types/create-organization.response';
-import { GetAllOrganizationsResponse } from './types/get-all-organizations.response';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -15,13 +13,13 @@ export class OrganizationsController {
   @ApiOperation({ summary: 'Create an organization' })
   async createOrganization(
     @Body() createOrganizationDTO: CreateOrganizationDTO
-  ): Promise<CreateOrganizationResponse> {
+  ): Promise<Organizations> {
     return this.organizationsService.createOrganization(createOrganizationDTO);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all organizations' })
-  async getAllOrganizations(): Promise<GetAllOrganizationsResponse>  {  
+  async getAllOrganizations(): Promise<Organizations[]>  {  
     return this.organizationsService.getAllOrganizations();
   }
 }

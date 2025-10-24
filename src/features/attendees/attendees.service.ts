@@ -1,150 +1,78 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
+import { Attendees } from '@prisma/client';
 
 import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
-
-import { CreateAttendeeResponse } from './types/create-attendee.response';
-import { GetAllAttendeesResponse } from './types/get-all-attendees.response';
-import { DeleteAttendeeResponse } from './types/delete-attendee.response';
-import { UpdateAttendeeResponse } from './types/update-attendee.response';
-import { GetAttendeeByIdResponse } from './types/get-attendee-by-id.response';
-import { GetAllAttendeesForRecognitionResponse } from './types/get-all-attendees-for-recognition.response';
-import { AttendeeForRecognition } from './types/attendee-for-recognition';
+import { AttendeeForRecognition } from './types/attendee-for-recognition.types';
 
 @Injectable()
 export class AttendeesService {
   constructor(private prisma: PrismaService) {}
 
-  async createAttendee(payload: CreateAttendeeDTO): Promise<CreateAttendeeResponse> {
-    try {
-      const attendee = await this.prisma.attendees.create({
-        data: payload,
-      })
-      
-      return {
-        status: 201,
-        message: 'Attendee created successfully.',
-        data: attendee,
-      };
-    } catch (error) {
-      console.error('Error creating attendee:', error);
-      throw new InternalServerErrorException('Failed to create attendee');
-    }
+  async createAttendee(payload: CreateAttendeeDTO): Promise<Attendees> {
+    const attendee = await this.prisma.attendees.create({
+      data: payload,
+    })
+    
+    return attendee
   }
 
-  async getAllAttendees(): Promise<GetAllAttendeesResponse>   {
-    try {
-      const attendees = await this.prisma.attendees.findMany();
+  async getAllAttendees(): Promise<Attendees[]>   {
+    const attendees = await this.prisma.attendees.findMany();
 
-      return {
-        status: 200,
-        results: attendees.length,
-        data: attendees,
-      }
-    } catch (error) {
-      console.error('Error fetching attendees:', error);
-      throw new InternalServerErrorException('Failed to fetch attendees');
-    }
+    return attendees
   }
 
-  async getAllAttendeesForRecognition(organizationId: string): Promise<GetAllAttendeesForRecognitionResponse> {
-    try {
-      const attendeesFromDB = await this.prisma.$queryRaw<any[]>`
-        SELECT id, "first_name", "last_name", embedding::text AS embedding 
-        FROM "attendees"
-        WHERE "organization_id" = ${organizationId}
-      `;
+  async getAllAttendeesForRecognition(organizationId: string): Promise<AttendeeForRecognition[]> {
+    const attendeesFromDB = await this.prisma.$queryRaw<any[]>`
+      SELECT id, "first_name", "last_name", embedding::text AS embedding 
+      FROM "attendees"
+      WHERE "organization_id" = ${organizationId}
+    `;
 
-      const attendees: AttendeeForRecognition[] = attendeesFromDB.map(attendee => ({
-        ...attendee,
-        embedding: JSON.parse(attendee.embedding)
-      }));
+    const attendees: AttendeeForRecognition[] = attendeesFromDB.map(attendee => ({
+      ...attendee,
+      embedding: JSON.parse(attendee.embedding)
+    }));
 
-      return {
-        status: 200,
-        results: attendees.length,  
-        data: attendees,
-      }
-    } catch (error) {
-      console.error('Error fetching attendees:', error);
-      throw new InternalServerErrorException('Failed to fetch attendees');
-    }
+    return attendees
   }
 
-  async getAttendeeById(id: string): Promise<GetAttendeeByIdResponse> {
-    try {
-      const attendee = await this.prisma.attendees.findUnique({
-        where: { id },
-      })
+  async getAttendeeById(id: string): Promise<Attendees> {
+    const attendee = await this.prisma.attendees.findUnique({
+      where: { id },
+    })
 
-      if (!attendee) {
-        throw new NotFoundException('Attendee not found');
-      }
-
-      return {
-        status: 200,
-        message: 'Attendee found successfully.',
-        data: attendee,
-      }
-    } catch (error) {
-      console.error('Error fetching attendee:', error);
-      throw new InternalServerErrorException('Failed to fetch attendee');
+    if (!attendee) {
+      throw new NotFoundException('Attendee not found');
     }
+
+    return attendee
   }
 
-  async getAllAttendeesByOrganization(organizationId: string): Promise<GetAllAttendeesResponse> {
-    try {
-      const attendees = await this.prisma.attendees.findMany({
-        where: { organizationId: organizationId }
-      });
+  async getAllAttendeesByOrganization(organizationId: string): Promise<Attendees[]> {
+    const attendees = await this.prisma.attendees.findMany({
+      where: { organizationId: organizationId }
+    });
 
-      return {
-        status: 200,
-        results: attendees.length,
-        data: attendees,
-      }
-    } catch (error) {
-      console.error('Error fetching attendees:', error);
-      throw new InternalServerErrorException('Failed to fetch attendees');
-    }
+    return attendees
   }
 
-  async updateAttendee(id: string, payload: UpdateAttendeeDTO): Promise<UpdateAttendeeResponse> {
-    try {
-      const updatedAttendee = await this.prisma.attendees.update({
-        where: { id },
-        data: payload,
-      });
+  async updateAttendee(id: string, payload: UpdateAttendeeDTO): Promise<Attendees> {
+    const updatedAttendee = await this.prisma.attendees.update({
+      where: { id },
+      data: payload,
+    });
 
-      return {
-        status: 200,
-        message: 'Attendee updated successfully',
-        data: updatedAttendee,
-      };
-    } catch (error) {
-      console.error('Error updating attendee:', error);
-      throw new InternalServerErrorException('Failed to update attendee');
-    }
+    return updatedAttendee
   }
 
-  async deleteAttendee(id: string): Promise<DeleteAttendeeResponse> {
-    try {
-      await this.prisma.attendees.delete({
-        where: { id }
-      })  
+  async deleteAttendee(id: string): Promise<Attendees> {
+    const deletedAttendee = await this.prisma.attendees.delete({
+      where: { id }
+    })  
 
-      return {
-        success: true,
-        message: 'Attendee deleted successfully.',
-        deletedId: id,
-      }
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException('Failed to delete attendee');
-    }
+    return deletedAttendee
   }
 }

@@ -1,76 +1,37 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
+import { EventRegistrations, Prisma } from '@prisma/client';
 
-import { RegisterAttendeeDTO } from './dto/register-attendee.dto';
-import { RegisterAttendeeResponse } from './types/register-attendee.response';
-import { GetAllRegisteredAttendeeResponse } from './types/get-all-registered-attendee.response';
+import { CreateEventRegistrationDto } from './dto/create-event-registration.dto';
 
 @Injectable()
 export class EventRegistrationsService {
   constructor(private prisma: PrismaService) {}
   
-  async registerAttendee(payload: RegisterAttendeeDTO): Promise<RegisterAttendeeResponse> {
+  async registerAttendee(payload: CreateEventRegistrationDto): Promise<EventRegistrations> {
     try {
       const attendee = await this.prisma.eventRegistrations.create({
         data: payload,
       })
-
-      return {
-        status: 201,
-        message: 'Attendee registered successfully.',
-        data: attendee,
-      }
+  
+      return attendee
     } catch (error) {
-      console.error('Error registering attendee:', error);
-      throw new InternalServerErrorException('Failed to register attendee');
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          'This attendee is already registered for this event.',
+        );
+      }
+      throw error;
     }
   }
 
-  async getAllRegisteredAttendee(eventId?: string): Promise<GetAllRegisteredAttendeeResponse> {
-    try {
-      const events = await this.prisma.eventRegistrations.findMany({
-        where: {
-          eventId: eventId
-        },
-        include: {
-          attendee: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              primaryLeader: true,
-              churchHierarchy: true,
-              memberStatus: true,
-            } 
-          },
-          event: {
-            select: {
-              name: true,
-            }
-          }
-        }
-      });
+  async getAllEventRegistrations(): Promise<EventRegistrations[]> {
+    const eventRegistrations = await this.prisma.eventRegistrations.findMany({
+      include: {
+        attendee: true,
+      },
+    });
 
-      const transformedResponse = events.map((reg) => {
-        return {
-          id: reg.id ?? reg.attendee?.id ?? '',
-          firstName: reg.firstName ?? reg.attendee?.firstName ?? '',
-          lastName: reg.lastName ?? reg.attendee?.lastName ?? '',
-          primaryLeader: reg.primaryLeader ?? reg.attendee?.primaryLeader ?? 'N/A',
-          churchHierarchy: reg.churchHierarchy ?? reg.attendee?.churchHierarchy ?? 'Unspecified',
-          memberStatus: reg.memberStatus ?? reg.attendee?.memberStatus ?? 'Unspecified',
-        }
-      })
-
-      return {
-        status: 200,
-        message: 'Registered Attendee fetched successfully.',
-        results: transformedResponse.length,
-        data: transformedResponse,
-      }
-    } catch (error) {
-      console.error('Error fetching Registered Attendee:', error);
-      throw new InternalServerErrorException('Failed to fetch Registered Attendee');
-    }
+    return eventRegistrations
   }
 }

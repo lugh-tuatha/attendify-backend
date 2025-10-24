@@ -1,4 +1,5 @@
-import { IsDateString, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
+import { EventCategory } from "@prisma/client";
+import { IsDateString, IsEnum, IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator";
 
 export class CreateEventDTO {
   @IsNotEmpty()
@@ -22,10 +23,14 @@ export class CreateEventDTO {
   location: string;
 
   @IsNotEmpty()
+  @IsEnum(EventCategory)
+  category: EventCategory;
+
+  @IsNotEmpty()
   @IsUUID()
   organizationId: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsDateString()
   startDate: Date;
 

@@ -5,10 +5,9 @@ import { PrismaService } from 'src/shared/database/prisma.service';
 import { HttpModule } from '@nestjs/axios';
 
 @Module({
-  imports: [
-    HttpModule
-  ],
+  imports: [HttpModule],
   controllers: [AttendanceController],
   providers: [AttendanceService, PrismaService],
 })
 export class AttendanceModule {}
+  

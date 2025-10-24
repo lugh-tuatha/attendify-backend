@@ -23,14 +23,6 @@ export class CreateAttendanceDTO {
   weekNumber: number;
 
   @IsOptional()
-  @IsNumber()
-  hoursWorked: number;
-
-  @IsNotEmpty()
-  @IsUUID()
-  attendanceTypeId: string;
-
-  @IsOptional()
   @IsUUID()
   eventId: string;
 

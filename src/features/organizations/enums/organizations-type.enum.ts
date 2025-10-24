@@ -1,5 +1,5 @@
 export enum OrganizationsType {
-  SCHOOL = 'school',
+  SCHOOL = 'SCHOOL',
   COMPANY = 'COMPANY',
   UNIVERSITY = 'university',
 }

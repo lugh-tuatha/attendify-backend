@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOperation, ApiQuery } from '@nestjs/swagger';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { EventRegistrationsService } from './event-registrations.service';
 
-import { RegisterAttendeeDTO } from './dto/register-attendee.dto';
-import { RegisterAttendeeResponse } from './types/register-attendee.response';
-import { GetAllRegisteredAttendeeResponse } from './types/get-all-registered-attendee.response';
+import { EventRegistrations } from '@prisma/client';
+import { CreateEventRegistrationDto } from './dto/create-event-registration.dto';
 
 @Controller('event-registrations')
 export class EventRegistrationsController {
@@ -13,17 +12,14 @@ export class EventRegistrationsController {
   @Post()
   @ApiOperation({ summary: 'Register Attendee' })
   async registerAttendee(
-    @Body() registerAttendeeDTO: RegisterAttendeeDTO,
-  ): Promise<RegisterAttendeeResponse> {
+    @Body() registerAttendeeDTO: CreateEventRegistrationDto,
+  ): Promise<EventRegistrations> {
     return this.eventRegistrationsService.registerAttendee(registerAttendeeDTO);
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get registered Attendee' })
-  @ApiQuery({ name: 'event-id', required: false, type: String, description: 'Get Registered Attendee by event id' })
-  async getAllRegisteredAttendee(
-    @Query('event-id') eventId?: string,
-  ): Promise<GetAllRegisteredAttendeeResponse>  {  
-    return this.eventRegistrationsService.getAllRegisteredAttendee(eventId);
+  @ApiOperation({ summary: 'Get all registered attendees' })
+  async getAllEventRegistrations(): Promise<EventRegistrations[]>  {  
+    return this.eventRegistrationsService.getAllEventRegistrations();
   }
 }

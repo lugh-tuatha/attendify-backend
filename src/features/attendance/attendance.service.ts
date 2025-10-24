@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
@@ -8,12 +8,10 @@ import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
 import { CheckInByFaceDto } from './dto/check-in-by-face.dto';
 
-import { CreateAttendanceResponse } from './types/create-attendance.response';
-import { GetAllAttendanceByOrgAndTypeResponse } from './types/get-all-attendance-by-org-and-type.response';
-import { DeleteAttendanceResponse } from './types/delete-attendance.response';
-import { UpdateAttendanceResponse } from './types/update-attendance.response';
-import { GetAttendanceByIdResponse } from './types/get-attendance-by-id.response';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
+import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
+import { Attendance, Prisma } from '@prisma/client';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class AttendanceService {
@@ -33,32 +31,52 @@ export class AttendanceService {
     this.faceRecognitionApiUrl = apiUrl;
   }
 
-  async createAttendance(payload: CreateAttendanceDTO): Promise<CreateAttendanceResponse> {
-    try {
-      const event = await this.prisma.attendance.create({
-        data: payload,
-      })
-
-      return {
-        status: 201,
-        message: 'Attendance created successfully.',
-        data: event,
+  async createAttendance(payload: CreateAttendanceDTO): Promise<Attendance> {
+    const attendance = await this.prisma.attendance.create({
+      data: payload,
+      include: {
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            cellLeader: true,
+            memberStatus: true,
+          },
+        },
+        eventRegistration: true
       }
-    } catch (error) {
-      console.error('Error creating attendee:', error);
-      throw new InternalServerErrorException('Failed to create attendee');
-    }
+    })
+
+    return attendance
   }
 
   async checkInByFace(payload: CheckInByFaceDto): Promise<CheckInByFaceResponse> {
-    const response = await firstValueFrom(
-      this.httpService.post<CheckInByFaceResponse>(this.faceRecognitionApiUrl, payload)
-    );
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<CheckInByFaceResponse>(this.faceRecognitionApiUrl, payload)
+      );
 
-    return response.data
+      return response.data
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          console.error('Fa ce recognition API error:', error.response.data);
+          throw new BadGatewayException(
+            'Face recognition service failed',
+            error.response.data
+          );
+        }
+
+        throw new BadGatewayException('Face recognition service is unreachable');
+      }
+
+      console.error('Unknown error during face check-in:', error);
+      throw new InternalServerErrorException('An unexpected error occurred');
+    }
   }
-
-  async getAttendanceById(id: string): Promise<GetAttendanceByIdResponse> {
+  
+  async getAttendanceById(id: string): Promise<Attendance> {
     const attendance = await this.prisma.attendance.findUnique({
       where: { id },
     })
@@ -67,98 +85,79 @@ export class AttendanceService {
       throw new NotFoundException('Attendance not found');
     }
 
-    return {
-      status: 200,
-      message: 'Attendance found successfully.',
-      data: attendance,
-    }
+    return attendance
   }
 
-  async getAllAttendanceByOrganizationAndAttendanceType(organizationId: string, attendanceTypeId: string, memberStatus?: string, attendeeId?: string, date?: string): Promise<GetAllAttendanceByOrgAndTypeResponse> {
-    try {
-      const attendance = await this.prisma.attendance.findMany({
-        where: {
-          organizationId: organizationId,
-          attendanceTypeId: attendanceTypeId,
-          attendee: memberStatus ? { memberStatus } : undefined,
-          attendeeId: attendeeId ? attendeeId : undefined,
-          ...(date && {
-            createdAt: {
-              gte: new Date(`${date}T00:00:00.000Z`),
-              lte: new Date(`${date}T23:59:59.999Z`)
-            }
-          })
-        },
-        include: {
-          attendee: {
-            select: {
-              firstName: true,
-              lastName: true,
-              department: true,
-              cellLeader: true,
-              memberStatus: true,
-            }
-          },
-          eventRegistration: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              primaryLeader: true,
-              churchHierarchy: true,
-              memberStatus: true,
-            }
-          }
-        }
-      });
+  async getAllAttendance(filters: GetAllAttendanceDto): Promise<Attendance[]> {
+    const { organizationId, search, eventId, memberStatus, attendeeId, date } = filters;
 
-      return {
-        status: 200,
-        message: 'Attendance fetched successfully.',
-        results: attendance.length,
-        data: attendance,
-      }
-    } catch (error) {
-      console.error('Error fetching attendance:', error);
-      throw new InternalServerErrorException('Failed to fetch attendance');
-    }
-  }
+    const where: Prisma.AttendanceWhereInput = {}
 
-  async updateAttendance(id: string, payload: UpdateAttendanceDTO): Promise<UpdateAttendanceResponse> {
-    try {
-      const updateAttendance = await this.prisma.attendance.update({
-        where: { id },
-        data: payload,
-      });
-
-      return {
-        status: 200,
-        message: 'Attendee updated successfully',
-        data: updateAttendance,
+    if (search) {
+      where.attendee = { 
+        OR: [
+          { firstName: { contains: search, mode: 'insensitive' } },
+          { lastName: { contains: search, mode: 'insensitive' } },
+        ]
       };
-    } catch (error) {
-      console.error('Error updating attendee:', error);
-      throw new InternalServerErrorException('Failed to update atttendance');
     }
+
+    if (organizationId) {
+      where.organizationId = organizationId;
+    }
+
+    if (eventId) {
+      where.eventId = eventId;
+    }
+
+    if (memberStatus) {
+      where.attendee = { memberStatus };
+    }
+
+    if (attendeeId) {
+      where.attendeeId = attendeeId;
+    }
+
+    if (date) {
+      where.createdAt = {
+        gte: new Date(`${date}T00:00:00.000Z`),
+        lte: new Date(`${date}T23:59:59.999Z`),
+      };
+    }
+
+    const attendees = this.prisma.attendance.findMany({ 
+      where,
+      include: {
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            cellLeader: true,
+            memberStatus: true,
+          },
+        },
+        eventRegistration: true
+      },
+    })
+
+    return attendees;
+  }
+
+  async updateAttendance(id: string, payload: UpdateAttendanceDTO): Promise<Attendance> {
+    const updateAttendance = await this.prisma.attendance.update({
+      where: { id },
+      data: payload,
+    });
+
+    return updateAttendance
   }   
 
-  async deleteAttendance(id: string): Promise<DeleteAttendanceResponse> {
-    try {
-      await this.prisma.attendance.delete({
-        where: { id }
-      })  
+  async deleteAttendance(id: string): Promise<Attendance> {
+    const deletedAttendance = await this.prisma.attendance.delete({
+      where: { id }
+    })  
 
-      return {
-        success: true,
-        message: 'Attendance deleted successfully.',
-        deletedId: id,
-      }
-    } catch (error) {
-      if (error instanceof NotFoundException) {
-        throw error;
-      }
-
-      throw new InternalServerErrorException('Failed to delete attendee');
-    }
+    return deletedAttendance;
   }
 }

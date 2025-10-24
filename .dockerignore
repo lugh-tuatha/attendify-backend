@@ -1,8 +1,18 @@
+# Node
 node_modules
 dist
+
+# Git files
 .git
 .gitignore
-.vscode
-.env
+
+# Docker files
 Dockerfile
+.dockerignore
 docker-compose.yml
+
+# Environment variables
+.env
+
+# VSCode Files
+.vscode
