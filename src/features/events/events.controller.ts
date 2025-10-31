@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { EventsService } from './events.service';
-import { EventRegistrations, Events, Prisma } from '@prisma/client';
+import { EventCategory, EventRegistrations, Events, Prisma } from '@prisma/client';
 
 import { CreateEventDTO } from './dto/create-event.dto';
 
@@ -19,7 +19,7 @@ export class EventsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all events' })
-  async getAllAttendees(): Promise<Events[]>  {  
+  async getAllEvents(): Promise<Events[]>  {  
     return this.eventsService.getAllEvents();
   }
 
@@ -29,6 +29,22 @@ export class EventsController {
     @Param('id') id: string
   ) : Promise<Events> {
     return this.eventsService.getEventById(id);
+  }
+
+  @Get('category/:category')
+  @ApiOperation({ summary: 'Get all events by category' })
+  async getAllEventsByCategory(
+    @Param('category') category: EventCategory
+  ) : Promise<Events[]> {
+    return this.eventsService.getAllEventsByCategory(category);
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get event by slug' })
+  async getEventBySlug(
+    @Param('slug') slug: string
+  ) : Promise<Events> {
+    return this.eventsService.getEventBySlug(slug);
   }
 
   @Get(':id/attendees')

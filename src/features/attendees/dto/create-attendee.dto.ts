@@ -1,3 +1,4 @@
+import { MemberStatus } from "@prisma/client"
 import { IsArray, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
 
 export class CreateAttendeeDTO {
@@ -61,7 +62,7 @@ export class CreateAttendeeDTO {
 
   @IsOptional()
   @IsString()
-  memberStatus: string
+  memberStatus: MemberStatus
 
   @IsOptional()
   @IsString()

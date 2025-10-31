@@ -27,6 +27,10 @@ export class CreateEventDTO {
   category: EventCategory;
 
   @IsNotEmpty()
+  @IsString()
+  slug: string;
+
+  @IsNotEmpty()
   @IsUUID()
   organizationId: string;
 

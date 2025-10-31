@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
-import { Events, Prisma } from '@prisma/client';
+import { EventCategory, Events, Prisma } from '@prisma/client';
 
 import { CreateEventDTO } from './dto/create-event.dto';
 
@@ -21,6 +21,7 @@ export class EventsService {
       include: {
         organization: {
           select: {
+            id: true,
             name: true,
           }
         }
@@ -38,10 +39,51 @@ export class EventsService {
       include: {
         organization: {
           select: {
+            id: true,
             name: true,
           }
         }
       },
+    });
+
+    if (!event) {
+      throw new NotFoundException('Event not found');
+    }
+
+    return event
+  }
+
+  async getAllEventsByCategory(category: EventCategory): Promise<Events[]> {
+    const events = await this.prisma.events.findMany({
+      where: {
+        category: category,
+      },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+          }
+        }
+      } 
+    });
+
+    return events
+  }
+
+  async getEventBySlug(slug: string): Promise<Events> {
+    const event = await this.prisma.events.findUnique({
+      where: {
+        slug: slug,
+      },
+      include: {
+        organization: {
+          select: {
+            id: true,
+            name: true,
+          }
+        }
+      }, 
     });
 
     if (!event) {

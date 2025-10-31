@@ -1,9 +1,8 @@
+import { Attendance } from "@prisma/client";
+import { FaceRecognitionApiResponse } from "./face-recognition-api.response";
+
 export interface CheckInByFaceResponse {
-  "verified": boolean,
-  "attendee_id": string | null,
-  "first_name": string | null,
-  "last_name": string | null,
-  "distance": number | null,
-  "message": string | null,
-  "closest_match_distance": number | null,
+  message: string;
+  attendanceRecord?: Attendance;
+  recognitionData: FaceRecognitionApiResponse;
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AttendeesService } from './attendees.service';
 import { Attendees } from '@prisma/client';
@@ -6,6 +6,9 @@ import { Attendees } from '@prisma/client';
 import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { AttendeeForRecognition } from './types/attendee-for-recognition.types';
+import { PaginatedResponse } from 'src/shared/types/paginated.response';
+import { GetAllAttendanceDto } from '../attendance/dto/get-all-attendance.dto';
+import { GetAllAttendeesDto } from './dto/get-all-attendees.dto';
 
 @Controller('attendees')
 export class AttendeesController {
@@ -21,8 +24,10 @@ export class AttendeesController {
 
   @Get()
   @ApiOperation({ summary: 'Get all attendees' })
-  async getAllAttendees(): Promise<Attendees[]>  {  
-    return this.attendeesService.getAllAttendees();
+  async getAllAttendees(
+    @Query() filters: GetAllAttendeesDto
+  ): Promise<PaginatedResponse<Attendees>>  {  
+    return this.attendeesService.getAllAttendees(filters);
   } 
 
   @Get('organization/:organizationId/for-recognition')

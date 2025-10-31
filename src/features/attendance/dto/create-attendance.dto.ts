@@ -3,11 +3,11 @@ import { IsDateString, IsNotEmpty, Min, IsUUID, IsNumber, IsOptional } from "cla
 export class CreateAttendanceDTO {
   @IsOptional()
   @IsUUID()
-  attendeeId: string;
+  attendeeId?: string;
 
   @IsOptional()
   @IsUUID()
-  eventRegistrationId: string;
+  eventRegistrationId?: string;
 
   @IsNotEmpty()
   @IsDateString()
@@ -15,7 +15,7 @@ export class CreateAttendanceDTO {
 
   @IsOptional()
   @IsDateString()
-  timeOut: Date;
+  timeOut?: Date;
 
   @IsNotEmpty()
   @IsNumber()
@@ -24,7 +24,7 @@ export class CreateAttendanceDTO {
 
   @IsOptional()
   @IsUUID()
-  eventId: string;
+  eventId?: string;
 
   @IsNotEmpty()
   @IsUUID()

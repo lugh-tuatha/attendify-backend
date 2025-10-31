@@ -20,6 +20,7 @@ async function main() {
       tagline: 'Lorem',
       location: 'Pilar Building 507 Dalupan Street Sampaloc, Manila 10001',
       category: EventCategory.RECURRING,
+      slug: 'lthmi-recto-sunday-service',
       startTime: new Date('1970-01-01T09:00:00+08:00'),
       endTime: new Date('1970-01-01T12:00:00+08:00'),
       organizationId: organization.id,

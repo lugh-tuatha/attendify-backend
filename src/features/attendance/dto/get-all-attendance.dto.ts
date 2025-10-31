@@ -1,7 +1,9 @@
+import { MemberStatus } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsDateString, IsNumber, IsOptional, IsString, IsUUID, Min } from "class-validator";
+import { PaginationQueryDto } from "src/shared/dto/pagination-query.dto";
 
-export class GetAllAttendanceDto {
+export class GetAllAttendanceDto extends PaginationQueryDto {
   @IsOptional()
   @IsUUID()
   organizationId: string;
@@ -11,12 +13,16 @@ export class GetAllAttendanceDto {
   search?: string;
 
   @IsOptional()
+  @IsString()
+  slug?: string;
+
+  @IsOptional()
   @IsUUID()
   eventId?: string;
 
   @IsOptional()
   @IsString()
-  memberStatus?: string;
+  memberStatus?: MemberStatus;
 
   @IsOptional()
   @IsUUID()
