@@ -1,4 +1,4 @@
-import { IsDateString, IsNotEmpty, Min, IsUUID, IsNumber, IsOptional } from "class-validator";
+import { IsDateString, IsNotEmpty, Min, IsUUID, IsNumber, IsOptional, IsBoolean } from "class-validator";
 
 export class CreateAttendanceDTO {
   @IsOptional()
@@ -9,18 +9,13 @@ export class CreateAttendanceDTO {
   @IsUUID()
   eventRegistrationId?: string;
 
-  @IsNotEmpty()
-  @IsDateString()
-  timeIn: Date;
-
   @IsOptional()
   @IsDateString()
   timeOut?: Date;
 
   @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  weekNumber: number;
+  @IsBoolean()
+  isLate: boolean;
 
   @IsOptional()
   @IsUUID()

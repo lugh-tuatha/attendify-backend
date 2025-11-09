@@ -46,13 +46,4 @@ export class EventsController {
   ) : Promise<Events> {
     return this.eventsService.getEventBySlug(slug);
   }
-
-  @Get(':id/attendees')
-  @ApiOperation({ summary: 'Get all registered attendees' })
-  async getEventAttendees(
-    @Param('id') id: string,
-    @Query('search') search?: string
-  ) : Promise<(Prisma.EventRegistrationsGetPayload<{ include: { attendee: true } }> )[]> {
-    return this.eventsService.getEventAttendees(id, search);
-  }
 }

@@ -30,7 +30,6 @@ export class AttendeesService {
       where.OR = [
         { firstName: { contains: search, mode: 'insensitive' } },
         { lastName: { contains: search, mode: 'insensitive' } },
-        { primaryLeader: { contains: search, mode: 'insensitive' } },
       ]
     }
 
@@ -45,8 +44,21 @@ export class AttendeesService {
 
       this.prisma.attendees.findMany({
         where,
+        include: {
+          primaryLeader: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            }
+          }
+        },
         take: limit,
         skip: skip,
+        orderBy: [
+          { createdAt: 'desc' },
+          { id: 'asc' }
+        ]
       })
     ])
 

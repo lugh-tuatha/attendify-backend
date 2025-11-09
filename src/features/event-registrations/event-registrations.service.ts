@@ -25,10 +25,49 @@ export class EventRegistrationsService {
     }
   }
 
-  async getAllEventRegistrations(): Promise<EventRegistrations[]> {
+  async getAllRegisteredAttendees(): Promise<EventRegistrations[]> {
     const eventRegistrations = await this.prisma.eventRegistrations.findMany({
       include: {
-        attendee: true,
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            primaryLeader: {
+              select: {
+                firstName: true,
+                lastName: true,
+              }
+            }
+          }
+        },
+      },
+    });
+
+    return eventRegistrations
+  }
+
+  async getRegisteredAttendeesByEventId(eventId: string): Promise<EventRegistrations[]> {
+    const eventRegistrations = await this.prisma.eventRegistrations.findMany({
+      where: {
+        eventId: eventId,
+      },
+      include: {
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            churchHierarchy: true,
+            memberStatus: true,
+            primaryLeader: {
+              select: {
+                firstName: true,
+                lastName: true,
+              }
+            }
+          }
+        },
       },
     });
 

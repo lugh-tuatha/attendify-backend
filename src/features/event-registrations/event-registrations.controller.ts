@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { EventRegistrationsService } from './event-registrations.service';
 
@@ -19,7 +19,15 @@ export class EventRegistrationsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all registered attendees' })
-  async getAllEventRegistrations(): Promise<EventRegistrations[]>  {  
-    return this.eventRegistrationsService.getAllEventRegistrations();
+  async getAllRegisteredAttendees(): Promise<EventRegistrations[]>  {  
+    return this.eventRegistrationsService.getAllRegisteredAttendees();
+  }
+
+  @Get('event-id/:eventId')
+  @ApiOperation({ summary: 'Get all registered attendees for an event' })
+  async getAllRegisteredAttendeesForEvent(
+    @Param('eventId') eventId: string
+  ): Promise<EventRegistrations[]>  {  
+    return this.eventRegistrationsService.getRegisteredAttendeesByEventId(eventId);
   }
 }

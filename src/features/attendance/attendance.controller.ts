@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AttendanceService } from './attendance.service';
-import { Attendance } from '@prisma/client'; 
+import { Attendance, MemberStatus } from '@prisma/client'; 
 
 import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
@@ -45,6 +45,24 @@ export class AttendanceController {
     @Param('id', ParseUUIDPipe) id: string
   ) : Promise<Attendance> {
     return this.attendanceService.getAttendanceById(id);
+  }
+
+  @Get('slug/:slug/member-status/:memberStatus')
+  @ApiOperation({ summary: 'Get attendance by member status' })
+  async getAttendanceByMemberStatus(
+    @Param('slug') slug: string,
+    @Param('memberStatus') memberStatus: MemberStatus,
+    @Query('date') date: string,
+  ) : Promise<Attendance[]> {
+    return this.attendanceService.getAttendanceByMemberStatus(slug, memberStatus, date);
+  }
+
+  @Get('event-id/:eventId')
+  @ApiOperation({ summary: 'Get attendance by event id' })
+  async getAttendanceByEventId(
+    @Param('eventId') eventId: string
+  ) : Promise<Attendance[]> {
+    return this.attendanceService.getAttendanceByEventId(eventId);
   }
 
   @Patch(':id')

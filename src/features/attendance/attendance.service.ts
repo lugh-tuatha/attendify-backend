@@ -1,10 +1,10 @@
-import { BadGatewayException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AxiosError } from 'axios';
 import { ConfigService } from '@nestjs/config';
-import { Attendance, Prisma } from '@prisma/client';
+import { Attendance, MemberStatus, Prisma } from '@prisma/client';
 
 import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
@@ -15,6 +15,7 @@ import { FaceRecognitionApiResponse } from './types/face-recognition-api.respons
 import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
 import { getWeekNumber } from 'src/shared/utils/date.utils';
+import { UNTRACKED_MEMBER_STATUSES } from 'src/core/attendees/constants/attendee.constant';
 
 @Injectable()
 export class AttendanceService {
@@ -35,8 +36,48 @@ export class AttendanceService {
   }
 
   async createAttendance(payload: CreateAttendanceDTO): Promise<Attendance> {
+    const { isLate, attendeeId, eventId, organizationId } = payload;
+
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+
+    const currentDate = new Date();
+    const currentWeekNumber = getWeekNumber(currentDate);
+
+    const occuranceDate = formatter.format(currentDate); 
+    console.log(occuranceDate)
+
+    const existingAttendance = await this.prisma.attendance.findFirst({
+      where: {
+        attendeeId: attendeeId,
+        eventId: eventId,
+        organizationId: organizationId,
+        occuranceDate: occuranceDate
+      }
+    })
+
+    if (existingAttendance) {
+      throw new ConflictException(
+        'Attendee has already checked in today.',
+      );
+    }
+
+    const checkInPayload = {
+      attendeeId: attendeeId,
+      timeIn: currentDate,
+      occuranceDate: occuranceDate,
+      isLate: isLate,
+      weekNumber: currentWeekNumber,
+      eventId: eventId,
+      organizationId: organizationId,
+    }
+
     const attendance = await this.prisma.attendance.create({
-      data: payload,
+      data: checkInPayload,
       include: {
         attendee: {
           select: {
@@ -51,27 +92,30 @@ export class AttendanceService {
       }
     })
 
+    if(!attendance.attendee || !attendance.attendee.memberStatus) {
+      console.log('Skipping to update member status not found or null')
+      return attendance
+    }
+
+    const currentMemberStatus = attendance.attendee.memberStatus;
+
+    if (UNTRACKED_MEMBER_STATUSES.includes(currentMemberStatus)) {
+      return attendance;
+    }
+
+    const newStatus = this.getNextMemberStatus(currentMemberStatus);
+
+    await this.prisma.attendees.update({
+      where: { id: attendance.attendee.id },
+      data: { memberStatus: newStatus },
+    })
+    console.log(`Updated attendee ${attendance.attendee.id}, new status: ${newStatus}`);
+
     return attendance
   }
 
-  private async verifyFaceWithApi(imageAsDataUrl: string): Promise<FaceRecognitionApiResponse> {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.post<FaceRecognitionApiResponse>(this.faceRecognitionApiUrl, { imageAsDataUrl })
-      );
-
-      return response.data;
-    } catch (error) {
-      console.error('Error calling face recognition API:', error);
-      if (error instanceof AxiosError && error.response) {
-        throw new BadGatewayException('Face recognition service failed', error.response.data);
-      }
-      throw new InternalServerErrorException('Face recognition service is unreachable.');
-    }
-  }
-
   async checkInByFace(payload: CheckInByFaceDto): Promise<CheckInByFaceResponse> {
-    const { imageAsDataUrl, eventId, organizationId } = payload;
+    const { imageAsDataUrl, isLate, eventId, organizationId } = payload;
     let recognitionResponse = await this.verifyFaceWithApi(imageAsDataUrl);
 
     if (!recognitionResponse.verified) {
@@ -89,12 +133,11 @@ export class AttendanceService {
     }
 
     try {
-      const now = new Date();
-
       const checkInPayload = {
         attendeeId: attendee_id,
-        timeIn: now,
-        weekNumber: getWeekNumber(now),
+        timeIn: new Date(),
+        isLate: isLate,
+        weekNumber: getWeekNumber(new Date()),
         eventId: eventId,
         organizationId: organizationId,
       };
@@ -108,6 +151,12 @@ export class AttendanceService {
       };
       
     } catch (error) {
+      if (error instanceof BadRequestException || 
+          error instanceof ConflictException || 
+          error instanceof NotFoundException) {
+        throw error;
+      }
+
       console.error('Database error during attendance processing:', error);
       throw new InternalServerErrorException('Failed to save attendance record.');
     }
@@ -161,10 +210,7 @@ export class AttendanceService {
     }
 
     if (date) {
-      where.timeIn = {
-        gte: new Date(`${date}T00:00:00.000Z`),
-        lte: new Date(`${date}T23:59:59.999Z`),
-      };
+      where.occuranceDate = date;
     }
 
     const [total, attendance] = await this.prisma.$transaction([
@@ -180,7 +226,13 @@ export class AttendanceService {
               id: true,
               firstName: true,
               lastName: true,
-              primaryLeader: true,
+              primaryLeader: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                }
+              },
               churchProcess: true,
               memberStatus: true,
             },
@@ -190,6 +242,7 @@ export class AttendanceService {
               slug: true,
             }
           },
+          
           eventRegistration: true
         },
         take: limit,
@@ -208,6 +261,53 @@ export class AttendanceService {
     };
   }
 
+  async getAttendanceByMemberStatus(slug: string, memberStatus: MemberStatus, date: string): Promise<Attendance[]> {
+    const attendance = await this.prisma.attendance.findMany({
+      where: { 
+        event: { slug: slug }, 
+        attendee: { memberStatus: memberStatus },
+        occuranceDate: date
+      },
+      include: {
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            invitedBy: true,
+          }
+        }
+      }
+    })
+
+    return attendance;
+  }
+
+  async getAttendanceByEventId(eventId: string): Promise<Attendance[]> {
+    const attendance = await this.prisma.attendance.findMany({
+      where: { eventId: eventId },
+      include: {
+        attendee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            churchHierarchy: true,
+            memberStatus: true,
+            primaryLeader: {
+              select: {
+                firstName: true,
+                lastName: true,
+              }
+            }
+          }
+        }
+      }
+    })
+
+    return attendance;
+  }
+
   async updateAttendance(id: string, payload: UpdateAttendanceDTO): Promise<Attendance> {
     const updateAttendance = await this.prisma.attendance.update({
       where: { id },
@@ -223,5 +323,42 @@ export class AttendanceService {
     })  
 
     return deletedAttendance;
+  }
+
+
+  private async verifyFaceWithApi(imageAsDataUrl: string): Promise<FaceRecognitionApiResponse> {
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post<FaceRecognitionApiResponse>(this.faceRecognitionApiUrl, { imageAsDataUrl })
+      );
+
+      return response.data;
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response) {
+          throw new BadGatewayException(`Face recognition service failed: ${error.response.data}`);
+        } else if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+          throw new BadGatewayException('Face recognition service is unreachable.');
+        }
+      }
+      throw new InternalServerErrorException('Unexpected error occurred while verifying face.');
+    }
+  }
+
+  private getNextMemberStatus(currentStatus: MemberStatus): MemberStatus {
+    switch (currentStatus) {
+      case null:
+        return MemberStatus.FIRST_TIMER;
+      case MemberStatus.FIRST_TIMER:
+        return MemberStatus.SECOND_TIMER;
+      case MemberStatus.SECOND_TIMER:
+        return MemberStatus.THIRD_TIMER;
+      case MemberStatus.THIRD_TIMER:
+        return MemberStatus.FOURTH_TIMER;
+      case MemberStatus.FOURTH_TIMER:
+        return MemberStatus.REGULAR_ATTENDEE;
+      default:
+        return MemberStatus.REGULAR_ATTENDEE;
+    }
   }
 }

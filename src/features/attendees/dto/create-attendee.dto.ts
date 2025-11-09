@@ -1,5 +1,5 @@
-import { MemberStatus } from "@prisma/client"
-import { IsArray, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
+import { ChurchHierarchy, ChurchProcess, MemberStatus, Network } from "@prisma/client"
+import { IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
 
 export class CreateAttendeeDTO {
   @IsNotEmpty()
@@ -49,24 +49,24 @@ export class CreateAttendeeDTO {
   cellLeader: string
 
   @IsOptional()
-  @IsString()
-  primaryLeader: string
+  @IsUUID()
+  primaryLeaderId: string
 
   @IsOptional()
   @IsString()
-  network: string
+  network: Network
 
   @IsOptional()
-  @IsString()
-  churchHierarchy: string
+  @IsEnum(ChurchHierarchy)
+  churchHierarchy: ChurchHierarchy
 
   @IsOptional()
-  @IsString()
+  @IsEnum(MemberStatus)
   memberStatus: MemberStatus
 
   @IsOptional()
-  @IsString()
-  churchProcess: string
+  @IsEnum(ChurchProcess)
+  churchProcess: ChurchProcess
 
   @IsOptional()
   gradeLevel: string

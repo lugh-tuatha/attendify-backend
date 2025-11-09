@@ -33,11 +33,14 @@ model Attendees {
   facebookName       String?                @map("facebook_name")
   facebookLink       String?                @map("facebook_link")
   cellLeader         String?                @map("cell_leader")
-  primaryLeader      String?                @map("primary_leader")
-  network            String?
-  churchHierarchy    String?                @map("church_hierarchy")
+  primaryLeaderId    String?                @map("primary_leader_id")
+  primaryLeader      Attendees?             @relation("PrimaryLeaderRelation", fields: [primaryLeaderId], references: [id])
+  disciples          Attendees[]            @relation("PrimaryLeaderRelation")
+  network            Network?
+  churchHierarchy    ChurchHierarchy?       @map("church_hierarchy")
   memberStatus       MemberStatus?          @map("member_status")
-  churchProcess      String?                @map("church_process")
+  churchProcess      ChurchProcess?         @map("church_process")
+  invitedBy          String?                @map("invited_by")
   gradeLevel         String?                @map("grade_level")
   section            String?
   organizationId     String                 @map("organization_id")
@@ -78,15 +81,17 @@ model Events {
 model Attendance {
   id                  String              @id @default(uuid())
   timeIn              DateTime            @map("time_in")
+  occuranceDate       String              @map("occurance_date")
   timeOut             DateTime?           @map("time_out")
   weekNumber          Int                 @map("week_number")
+  isLate              Boolean             @map("is_late")
   createdAt           DateTime            @default(now()) @map("created_at")
   updatedAt           DateTime            @updatedAt @map("updated_at")
-  attendeeId          String?              @map("attendee_id")
+  attendeeId          String?             @map("attendee_id")
   eventRegistrationId String?             @map("event_registration_id")
   eventId             String?             @map("event_id")
   organizationId      String              @map("organization_id")
-  attendee            Attendees?           @relation(fields: [attendeeId], references: [id])
+  attendee            Attendees?          @relation(fields: [attendeeId], references: [id])
   event               Events?             @relation(fields: [eventId], references: [id])
   eventRegistration   EventRegistrations? @relation(fields: [eventRegistrationId], references: [id])
   organization        Organizations       @relation(fields: [organizationId], references: [id])
@@ -112,12 +117,20 @@ model EventRegistrations {
 enum OrganizationsType {
   CHURCH
   SCHOOL
-  COMPANY
 }
 
 enum EventCategory {
   RECURRING
   SPECIAL
+}
+
+enum ChurchHierarchy {
+  CELL_MEMBER
+  CELL_LEADER
+  PRIMARY_LEADER
+  ELDER
+  PASTOR
+  BISHOP
 }
 
 enum MemberStatus {
@@ -131,4 +144,26 @@ enum MemberStatus {
   BACK_TO_LIFE
   CELL_MEMBER
   CHILDREN
+}
+
+enum ChurchProcess {
+  PENDING
+  START_UP_LESSON
+  PRE_ENCOUNTER
+  POST_ENCOUNTER
+  UNDERCOVER
+  SOL_1
+  SOL_2
+  SOL_3
+  PASTORAL_MINISTRY
+}
+
+enum Network {
+  CHILDREN
+  YOUTH
+  YOUNG_PRO
+  MOTHER
+  FATHER
+  HUSBAND
+  WIFE
 }

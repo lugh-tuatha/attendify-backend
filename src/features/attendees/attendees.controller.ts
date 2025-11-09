@@ -7,7 +7,6 @@ import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { AttendeeForRecognition } from './types/attendee-for-recognition.types';
 import { PaginatedResponse } from 'src/shared/types/paginated.response';
-import { GetAllAttendanceDto } from '../attendance/dto/get-all-attendance.dto';
 import { GetAllAttendeesDto } from './dto/get-all-attendees.dto';
 
 @Controller('attendees')
