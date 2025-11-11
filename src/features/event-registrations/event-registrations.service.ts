@@ -69,6 +69,9 @@ export class EventRegistrationsService {
           }
         },
       },
+      orderBy: [
+        { createdAt: 'desc' },
+      ]
     });
 
     return eventRegistrations

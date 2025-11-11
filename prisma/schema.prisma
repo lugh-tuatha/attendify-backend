@@ -30,6 +30,7 @@ model Attendees {
   status             String?
   address            String?
   birthday           String?
+  referenceImageUrl  String?                @map("reference_image_url")
   facebookName       String?                @map("facebook_name")
   facebookLink       String?                @map("facebook_link")
   cellLeader         String?                @map("cell_leader")
@@ -134,6 +135,7 @@ enum ChurchHierarchy {
 }
 
 enum MemberStatus {
+  NEWCOMER
   FIRST_TIMER
   SECOND_TIMER
   THIRD_TIMER

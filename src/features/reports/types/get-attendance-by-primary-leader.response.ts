@@ -18,18 +18,17 @@ export interface GetAttendanceByPrimaryLeaderResponse {
     lastName: string;
   } | null;
   disciples: DiscipleAttendanceRecord[];
-  // summary: {
-  //   attendees: {
-  //     total: number;
-  //     categories: SummaryCategory[];
-  //   },
-  //   vips: {
-  //     total: number;
-  //     categories: SummaryCategory[];
-  //   },
-  //   totalAttendees: number;
-  //   present: number;
-  //   absent: number;
-  //   late: number;
-  // }
+  summary: {
+    attendees: {
+      total: number;
+      categories: SummaryCategory[];
+    },
+    vips: {
+      total: number;
+      categories: SummaryCategory[];
+    },
+    totalDisciples: number;
+    present: number;
+    absent: number;
+  }
 }

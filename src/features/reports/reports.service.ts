@@ -7,6 +7,7 @@ import { GetAttendanceByHierarchyDTO } from './dto/get-attendance-by-hierarchy.d
 import { GetAttendanceByHierarchyResponse } from './types/get-attendance-by-hierarchy.response';
 import { GetAttendanceByPrimaryLeaderResponse } from './types/get-attendance-by-primary-leader.response';
 import { GetAttendanceByPrimaryLeaderDTO } from './dto/get-attendance-by-primary-leader.dto';
+import { VIP_STATUSES, ATTENDEE_STATUSES } from 'src/core/attendees/constants/member-statuses';
 
 @Injectable()
 export class ReportsService {
@@ -22,21 +23,6 @@ export class ReportsService {
 
     const memberStatusCounts = this.groupByMemberStatus(attendance);
     
-    const VIP_STATUSES: MemberStatus[] = [
-      'FIRST_TIMER', 
-      'SECOND_TIMER', 
-      'THIRD_TIMER', 
-      'FOURTH_TIMER'
-    ];
-
-    const ATTENDEE_STATUSES: MemberStatus[] = [
-      'REGULAR_ATTENDEE',
-      'REGULAR_DISCIPLE',
-      'REGULAR_STARTUP',
-      'BACK_TO_LIFE',
-      'CHILDREN',
-    ];
-
     const attendeesCategories = ATTENDEE_STATUSES.map((status) => ({
       name: status,
       count: memberStatusCounts.get(status),
@@ -103,7 +89,7 @@ export class ReportsService {
   async getAttendanceByPrimaryLeader(filters: GetAttendanceByPrimaryLeaderDTO): Promise<GetAttendanceByPrimaryLeaderResponse> {
     const { date, eventId, primaryLeaderId } = filters;
 
-    const [primaryLeader, disciples] = await this.prisma.$transaction([
+    const [primaryLeader, disciples, attendance] = await this.prisma.$transaction([
       this.prisma.attendees.findUnique({
         where: { id: primaryLeaderId },
         select: {
@@ -132,22 +118,62 @@ export class ReportsService {
             }
           }
         }
+      }),
+
+      this.prisma.attendance.findMany({
+        where: {
+          eventId: eventId,
+          occuranceDate: date,
+          attendee: {
+            primaryLeaderId: primaryLeaderId
+          }
+        },
+        select: { attendee: { select: { memberStatus: true, } } }
       })
     ])
 
-    const sortedDisciples = disciples.sort((a, b) => {
-      if (a.attendance.length > 0 && b.attendance.length === 0) return -1;
-      if (a.attendance.length === 0 && b.attendance.length > 0) return 1;
-      return 0;
-    });
+    const sortedDisciples = disciples.sort(
+      (a, b) => b.attendance.length - a.attendance.length
+    );
+
+    const memberStatusCounts = this.groupByMemberStatus(attendance);
+    
+    const attendeesCategories = ATTENDEE_STATUSES.map((status) => ({
+      name: status,
+      count: memberStatusCounts.get(status),
+    }));
+
+    const vipsCategories = VIP_STATUSES.map((status) => ({
+      name: status,
+      count: memberStatusCounts.get(status) ?? 0,
+    }));
+
+    const totalRegularDisciples = attendeesCategories.reduce((sum, c) => sum + (c.count ?? 0), 0);
+    const totalVipDisciples = vipsCategories.reduce((sum, c) => sum + (c.count ?? 0), 0);
+    const totalDisciples = disciples.length;
+    const totalDisciplesPresent = attendance.length;
+    const totalDisciplesAbsent = totalDisciples - totalDisciplesPresent;
+
 
     return {
       primaryLeader: primaryLeader,
       disciples: sortedDisciples,
-      // summary: 
+      summary: {
+        attendees: {
+          categories: attendeesCategories,
+          total: totalRegularDisciples
+        },
+        vips: {
+          categories: vipsCategories,
+          total: totalVipDisciples
+        },
+        totalDisciples: totalDisciples,
+        present: totalDisciplesPresent,
+        absent: totalDisciplesAbsent,
+      }
     }
   }
-
+  
   private groupByMemberStatus(attendance: { attendee: { memberStatus: MemberStatus | null } | null }[]) {
     const map = new Map<MemberStatus, number>();
     for (const record of attendance) {

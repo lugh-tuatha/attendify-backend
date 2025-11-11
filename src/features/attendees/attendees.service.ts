@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { Attendees, ChurchHierarchy, Prisma } from '@prisma/client';
 
@@ -13,11 +13,21 @@ export class AttendeesService {
   constructor(private prisma: PrismaService) {}
 
   async createAttendee(payload: CreateAttendeeDTO): Promise<Attendees> {
-    const attendee = await this.prisma.attendees.create({
-      data: payload,
-    })
-    
-    return attendee
+    try {
+      const attendee = await this.prisma.attendees.create({
+        data: payload,
+      })
+      
+      return attendee
+    } catch (error) {
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          'This attendee is already exists.',
+        );
+      }
+
+      throw error;
+    }
   }
 
   async getAllAttendees(filters: GetAllAttendeesDto): Promise<PaginatedResponse<Attendees>>   {
@@ -57,7 +67,6 @@ export class AttendeesService {
         skip: skip,
         orderBy: [
           { createdAt: 'desc' },
-          { id: 'asc' }
         ]
       })
     ])

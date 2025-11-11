@@ -248,6 +248,9 @@ export class AttendanceService {
         },
         take: limit,
         skip: skip,
+        orderBy: [
+          { createdAt: 'desc' },
+        ]
       })
     ])
 
@@ -319,7 +322,10 @@ export class AttendanceService {
             }
           }
         }
-      }
+      },
+      orderBy: [
+        { createdAt: 'desc' },
+      ]
     })
 
     return attendance;
@@ -365,6 +371,8 @@ export class AttendanceService {
   private getNextMemberStatus(currentStatus: MemberStatus): MemberStatus {
     switch (currentStatus) {
       case null:
+        return MemberStatus.FIRST_TIMER;
+      case MemberStatus.NEWCOMER:
         return MemberStatus.FIRST_TIMER;
       case MemberStatus.FIRST_TIMER:
         return MemberStatus.SECOND_TIMER;
