@@ -30,7 +30,16 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:4200','http://localhost:8000', 'http://localhost:3001', 'http://10.71.136.117:3001', 'http://192.168.25.117:3001', 'https://lthmi-attendify.netlify.app'],
+    origin: [
+      'http://localhost:5173', 
+      'http://localhost:4200',
+      'http://localhost:8000', 
+      'http://localhost:3001', 
+      'http://10.71.136.117:3001', 
+      'http://192.168.25.117:3001', 
+      'https://lthmi-attendify.netlify.app',
+      'https://attendify.website'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });

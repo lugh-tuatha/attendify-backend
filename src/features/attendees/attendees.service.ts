@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
-import { Attendees, Prisma } from '@prisma/client';
+import { Attendees, ChurchHierarchy, Prisma } from '@prisma/client';
 
 import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
@@ -103,6 +103,14 @@ export class AttendeesService {
   async getAllAttendeesByOrganization(organizationId: string): Promise<Attendees[]> {
     const attendees = await this.prisma.attendees.findMany({
       where: { organizationId: organizationId }
+    });
+
+    return attendees
+  }
+
+  async getAllAttendeesByChurchHierarchy(churchHierarchy: ChurchHierarchy): Promise<Attendees[]> {
+    const attendees = await this.prisma.attendees.findMany({
+      where: { churchHierarchy: churchHierarchy },
     });
 
     return attendees

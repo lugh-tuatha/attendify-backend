@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { AttendeesService } from './attendees.service';
-import { Attendees } from '@prisma/client';
+import { Attendees, ChurchHierarchy, MemberStatus } from '@prisma/client';
 
 import { CreateAttendeeDTO } from './dto/create-attendee.dto';
 import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
@@ -51,6 +51,14 @@ export class AttendeesController {
     @Param('organizationId') organizationId: string
   ) : Promise<Attendees[]> {
     return this.attendeesService.getAllAttendeesByOrganization(organizationId);
+  }
+
+  @Get('church-hierarchy/:churchHierarchy')
+  @ApiOperation({ summary: 'Get all attendees by church hierarchy' })
+  async getAllAttendeesByChurchHierarchy(
+    @Param('churchHierarchy') churchHierarchy: ChurchHierarchy
+  ) : Promise<Attendees[]> {
+    return this.attendeesService.getAllAttendeesByChurchHierarchy(churchHierarchy);
   }
 
   @Patch(':id')

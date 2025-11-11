@@ -26,6 +26,10 @@ export class CreateAttendeeDTO {
 
   @IsOptional()
   @IsString()
+  invitedBy: string
+
+  @IsOptional()
+  @IsString()
   status: string
 
   @IsOptional()

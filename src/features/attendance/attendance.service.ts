@@ -16,6 +16,7 @@ import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
 import { getWeekNumber } from 'src/shared/utils/date.utils';
 import { UNTRACKED_MEMBER_STATUSES } from 'src/core/attendees/constants/attendee.constant';
+import { attendanceWithAttendeeStatusArgs, GetVipsResponse } from './types/get-vips.response';
 
 @Injectable()
 export class AttendanceService {
@@ -261,26 +262,42 @@ export class AttendanceService {
     };
   }
 
-  async getAttendanceByMemberStatus(slug: string, memberStatus: MemberStatus, date: string): Promise<Attendance[]> {
+  async getVipAttendance(slug: string, date: string): Promise<GetVipsResponse> {
     const attendance = await this.prisma.attendance.findMany({
       where: { 
         event: { slug: slug }, 
-        attendee: { memberStatus: memberStatus },
+        attendee: { 
+          memberStatus: {
+            in: ['FIRST_TIMER', 'SECOND_TIMER', 'THIRD_TIMER', 'FOURTH_TIMER']
+          } 
+        },
         occuranceDate: date
       },
-      include: {
-        attendee: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            invitedBy: true,
-          }
-        }
-      }
+      ...attendanceWithAttendeeStatusArgs,
     })
 
-    return attendance;
+    const groupedVips: GetVipsResponse = {
+      FIRST_TIMER: [],
+      SECOND_TIMER: [],
+      THIRD_TIMER: [],
+      FOURTH_TIMER: []
+    };
+
+    for (const record of attendance) {
+      const status = record.attendee!.memberStatus
+
+      if (status === 'FIRST_TIMER') {
+        groupedVips.FIRST_TIMER.push(record);
+      } else if (status === 'SECOND_TIMER') {
+        groupedVips.SECOND_TIMER.push(record);
+      } else if (status === 'THIRD_TIMER') {
+        groupedVips.THIRD_TIMER.push(record);
+      } else if (status === 'FOURTH_TIMER') {
+        groupedVips.FOURTH_TIMER.push(record);
+      }
+    }
+
+    return groupedVips;
   }
 
   async getAttendanceByEventId(eventId: string): Promise<Attendance[]> {
