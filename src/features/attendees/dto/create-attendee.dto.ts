@@ -1,12 +1,12 @@
 import { ChurchHierarchy, ChurchProcess, MemberStatus, Network } from "@prisma/client"
-import { IsArray, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from "class-validator"
 
 export class CreateAttendeeDTO {
   @IsNotEmpty()
   @IsString()
   firstName: string
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   lastName: string
 
@@ -16,7 +16,7 @@ export class CreateAttendeeDTO {
 
   @IsOptional()
   @IsInt()
-  @Min(0)
+  @Min(1)
   age: number
 
   @IsOptional()
@@ -82,4 +82,8 @@ export class CreateAttendeeDTO {
   @IsNotEmpty()
   @IsUUID()
   organizationId: string
+
+  @IsOptional()
+  @IsBoolean()
+  isArchived: boolean
 } 

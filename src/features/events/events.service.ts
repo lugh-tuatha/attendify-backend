@@ -65,7 +65,10 @@ export class EventsService {
             name: true,
           }
         }
-      } 
+      },
+      orderBy: {
+        name: 'asc',
+      }
     });
 
     return events

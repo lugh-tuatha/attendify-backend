@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/shared/database/prisma.service';
 import { Attendees, ChurchHierarchy, Prisma } from '@prisma/client';
 
@@ -7,6 +7,7 @@ import { UpdateAttendeeDTO } from './dto/update-attendee.dto';
 import { AttendeeForRecognition } from './types/attendee-for-recognition.types';
 import { PaginatedResponse } from 'src/shared/types/paginated.response';
 import { GetAllAttendeesDto } from './dto/get-all-attendees.dto';
+import { profileEnd } from 'console';
 
 @Injectable()
 export class AttendeesService {
@@ -34,7 +35,9 @@ export class AttendeesService {
     const { page = 1, limit = 10, organizationId, search } = filters;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.AttendeesWhereInput = {}
+    const where: Prisma.AttendeesWhereInput = {
+      isArchived: false
+    }
 
     if (search) {
       where.OR = [
@@ -120,6 +123,9 @@ export class AttendeesService {
   async getAllAttendeesByChurchHierarchy(churchHierarchy: ChurchHierarchy): Promise<Attendees[]> {
     const attendees = await this.prisma.attendees.findMany({
       where: { churchHierarchy: churchHierarchy },
+      orderBy: {
+        firstName: 'asc',
+      }
     });
 
     return attendees
