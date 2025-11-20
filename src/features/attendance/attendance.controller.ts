@@ -7,10 +7,11 @@ import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
 import { CheckInByFaceDto } from './dto/check-in-by-face.dto';
 
-import { PaginatedResponse } from 'src/shared/types/paginated.response';
 import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
 import { GetVipsResponse } from './types/get-vips.response';
+import { AttendancePaginatedResponse } from './types/attendance-paginated.response';
+import { ApiWithMetaResponse } from 'src/shared/types/api-with-meta.response';
 
 @Controller('attendance')
 export class AttendanceController {
@@ -36,7 +37,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Get all attendance with filters' })
   async getAllAttendance(
     @Query() filters: GetAllAttendanceDto
-  ): Promise<PaginatedResponse<Attendance>> {
+  ): Promise<AttendancePaginatedResponse<Attendance>> {
     return this.attendanceService.getAllAttendance(filters);
   }
 
@@ -61,7 +62,7 @@ export class AttendanceController {
   @ApiOperation({ summary: 'Get attendance by event id' })
   async getAttendanceByEventId(
     @Param('eventId') eventId: string
-  ) : Promise<Attendance[]> {
+  ) : Promise<ApiWithMetaResponse<Attendance>> {
     return this.attendanceService.getAttendanceByEventId(eventId);
   }
 

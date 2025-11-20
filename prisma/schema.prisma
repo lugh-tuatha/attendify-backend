@@ -11,11 +11,13 @@ model Organizations {
   id         String            @id @default(uuid())
   name       String
   type       OrganizationsType
-  createdAt  DateTime          @default(now()) @map("created_at")
-  updatedAt  DateTime          @updatedAt @map("updated_at")
+
   attendance Attendance[]
   attendees  Attendees[]
   events     Events[]
+
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
 
   @@map("organizations")
 }
@@ -25,32 +27,36 @@ model Attendees {
   firstName          String                 @map("first_name")
   lastName           String                 @map("last_name")
   embedding          Unsupported("vector")?
+  referenceImageUrl  String?                @map("reference_image_url")
   age                Int?
   email              String?
   status             String?
   address            String?
   birthday           String?
+  invitedBy          String?                @map("invited_by")
   facebookName       String?                @map("facebook_name")
   facebookLink       String?                @map("facebook_link")
   cellLeader         String?                @map("cell_leader")
-  gradeLevel         String?                @map("grade_level")
-  section            String?
-  createdAt          DateTime               @default(now()) @map("created_at")
-  updatedAt          DateTime               @updatedAt @map("updated_at")
-  organizationId     String                 @map("organization_id")
   memberStatus       MemberStatus?          @map("member_status")
   network            Network?
   churchHierarchy    ChurchHierarchy?       @map("church_hierarchy")
-  primaryLeaderId    String?                @map("primary_leader_id")
   churchProcess      ChurchProcess?         @map("church_process")
-  invitedBy          String?                @map("invited_by")
-  referenceImageUrl  String?                @map("reference_image_url")
-  attendance         Attendance[]
-  organization       Organizations          @relation(fields: [organizationId], references: [id])
-  primaryLeader      Attendees?             @relation("PrimaryLeaderRelation", fields: [primaryLeaderId], references: [id])
   disciples          Attendees[]            @relation("PrimaryLeaderRelation")
   eventRegistrations EventRegistrations[]
+  gradeLevel         String?                @map("grade_level")
+  section            String?
+
+  attendance         Attendance[]
+
+  primaryLeaderId    String?                @map("primary_leader_id")
+  primaryLeader      Attendees?             @relation("PrimaryLeaderRelation", fields: [primaryLeaderId], references: [id])
+
+  organizationId     String                 @map("organization_id")
+  organization       Organizations          @relation(fields: [organizationId], references: [id])
+
   isArchived         Boolean                @map("is_archived") @default(false)
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
 
   @@unique([firstName, lastName])
   @@map("attendees")
@@ -63,19 +69,22 @@ model Events {
   description        String
   tagline            String
   location           String
+  category           EventCategory
+  slug               String               @unique
   startDate          DateTime?            @map("start_date")
   endDate            DateTime?            @map("end_date")
   startTime          DateTime             @map("start_time")
   endTime            DateTime             @map("end_time")
+
+  eventRegistrations EventRegistrations[]
+  events             Attendance[]
+
+  organizationId     String               @map("organization_id")
+  organization       Organizations        @relation(fields: [organizationId], references: [id])
+
+  isArchived         Boolean              @map("is_archived") @default(false)
   createdAt          DateTime             @default(now()) @map("created_at")
   updatedAt          DateTime             @updatedAt @map("updated_at")
-  organizationId     String               @map("organization_id")
-  category           EventCategory
-  slug               String               @unique
-  events             Attendance[]
-  eventRegistrations EventRegistrations[]
-  organization       Organizations        @relation(fields: [organizationId], references: [id])
-  isArchived         Boolean              @map("is_archived") @default(false)
 
   @@map("events")
 }
@@ -85,32 +94,40 @@ model Attendance {
   timeIn              DateTime            @map("time_in")
   timeOut             DateTime?           @map("time_out")
   weekNumber          Int                 @map("week_number")
-  createdAt           DateTime            @default(now()) @map("created_at")
-  updatedAt           DateTime            @updatedAt @map("updated_at")
-  attendeeId          String?             @map("attendee_id")
-  eventRegistrationId String?             @map("event_registration_id")
-  eventId             String?             @map("event_id")
-  organizationId      String              @map("organization_id")
   isLate              Boolean             @map("is_late")
   occuranceDate       String              @map("occurance_date")
+
+  attendeeId          String?             @map("attendee_id")
   attendee            Attendees?          @relation(fields: [attendeeId], references: [id])
-  event               Events?             @relation(fields: [eventId], references: [id])
+
+  eventRegistrationId String?             @map("event_registration_id")
   eventRegistration   EventRegistrations? @relation(fields: [eventRegistrationId], references: [id])
+
+  eventId             String?             @map("event_id")
+  event               Events?             @relation(fields: [eventId], references: [id])
+
+  organizationId      String              @map("organization_id")
   organization        Organizations       @relation(fields: [organizationId], references: [id])
+
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
 
   @@map("attendance")
 }
 
 model EventRegistrations {
   id         String       @id @default(uuid())
-  invitedBy  String?      @map("invited_by")
+
+  attendance Attendance[]
+
   eventId    String       @map("event_id")
+  event      Events       @relation(fields: [eventId], references: [id])
+
   attendeeId String       @map("attendee_id")
+  attendee   Attendees    @relation(fields: [attendeeId], references: [id])
+
   createdAt  DateTime     @default(now()) @map("created_at")
   updatedAt  DateTime     @updatedAt @map("updated_at")
-  attendance Attendance[]
-  attendee   Attendees    @relation(fields: [attendeeId], references: [id])
-  event      Events       @relation(fields: [eventId], references: [id])
 
   @@unique([attendeeId, eventId])
   @@map("event_registrations")

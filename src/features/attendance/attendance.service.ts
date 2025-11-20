@@ -10,13 +10,14 @@ import { CreateAttendanceDTO } from './dto/create-attendance.dto';
 import { UpdateAttendanceDTO } from './dto/update-attendance.dto';
 import { CheckInByFaceDto } from './dto/check-in-by-face.dto';
 
-import { PaginatedResponse } from 'src/shared/types/paginated.response';
 import { FaceRecognitionApiResponse } from './types/face-recognition-api.response';
 import { GetAllAttendanceDto } from './dto/get-all-attendance.dto';
 import { CheckInByFaceResponse } from './types/check-in-by-face.response';
 import { getWeekNumber } from 'src/shared/utils/date.utils';
 import { UNTRACKED_MEMBER_STATUSES } from 'src/core/attendees/constants/attendee.constant';
 import { attendanceWithAttendeeStatusArgs, GetVipsResponse } from './types/get-vips.response';
+import { AttendancePaginatedResponse } from './types/attendance-paginated.response';
+import { ApiWithMetaResponse } from 'src/shared/types/api-with-meta.response';
 
 @Injectable()
 export class AttendanceService {
@@ -175,7 +176,7 @@ export class AttendanceService {
     return attendance
   }
 
-  async getAllAttendance(filters: GetAllAttendanceDto): Promise<PaginatedResponse<Attendance>> {
+  async getAllAttendance(filters: GetAllAttendanceDto): Promise<AttendancePaginatedResponse<Attendance>> {
     const { page = 1, limit = 10, organizationId, search, slug, eventId, memberStatus, attendeeId, date } = filters;
     const skip = (page - 1) * limit;
 
@@ -214,9 +215,16 @@ export class AttendanceService {
       where.occuranceDate = date;
     }
 
-    const [total, attendance] = await this.prisma.$transaction([
+    const [total, totalVips, attendance] = await this.prisma.$transaction([
       this.prisma.attendance.count({
         where,
+      }),
+
+      this.prisma.attendance.count({
+        where: {
+          ...where,
+          attendee: { memberStatus: { in: ['FIRST_TIMER', 'SECOND_TIMER', 'THIRD_TIMER', 'FOURTH_TIMER'] } }
+        }
       }),
 
       this.prisma.attendance.findMany({ 
@@ -258,6 +266,7 @@ export class AttendanceService {
       data: attendance,
       meta: {
         total,
+        totalVips,
         page,
         limit,
         lastPage: Math.ceil(total / limit),
@@ -303,32 +312,54 @@ export class AttendanceService {
     return groupedVips;
   }
 
-  async getAttendanceByEventId(eventId: string): Promise<Attendance[]> {
-    const attendance = await this.prisma.attendance.findMany({
-      where: { eventId: eventId },
-      include: {
-        attendee: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            churchHierarchy: true,
-            memberStatus: true,
-            primaryLeader: {
-              select: {
-                firstName: true,
-                lastName: true,
+  async getAttendanceByEventId(eventId: string): Promise<ApiWithMetaResponse<Attendance>> {
+    const [total, totalVips, attendance] = await this.prisma.$transaction([
+      this.prisma.attendance.count({
+        where: { eventId: eventId }
+      }),
+
+      this.prisma.attendance.count({
+        where: { 
+          eventId: eventId, 
+          attendee: { 
+            memberStatus: { in: ['FIRST_TIMER', 'SECOND_TIMER', 'THIRD_TIMER', 'FOURTH_TIMER'] } 
+          } 
+        }
+      }),
+
+      this.prisma.attendance.findMany({
+        where: { eventId: eventId },
+        include: {
+          attendee: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              churchHierarchy: true,
+              memberStatus: true,
+              primaryLeader: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                }
               }
             }
           }
-        }
-      },
-      orderBy: [
-        { createdAt: 'desc' },
-      ]
-    })
+        },
+        orderBy: [
+          { createdAt: 'desc' },
+        ]
+      })
+    ])
+    console.log(total, totalVips)
 
-    return attendance;
+    return {
+      data: attendance,
+      meta: {
+        total,
+        totalVips,
+      },
+    };
   }
 
   async updateAttendance(id: string, payload: UpdateAttendanceDTO): Promise<Attendance> {

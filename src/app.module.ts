@@ -8,6 +8,7 @@ import { EventsModule } from './features/events/events.module';
 import { EventRegistrationsModule } from './features/event-registrations/event-registrations.module';
 import { ConfigModule } from '@nestjs/config';
 import { ReportsModule } from './features/reports/reports.module';
+import { DashboardModule } from './features/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ReportsModule } from './features/reports/reports.module';
     EventsModule, 
     EventRegistrationsModule,
     ReportsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
