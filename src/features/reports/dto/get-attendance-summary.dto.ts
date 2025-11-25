@@ -1,4 +1,4 @@
-import { IsDateString, IsNotEmpty, IsUUID } from "class-validator";
+import { IsDateString, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class GetAttendanceSummaryDTO {
   @IsNotEmpty()
@@ -8,4 +8,8 @@ export class GetAttendanceSummaryDTO {
   @IsNotEmpty()
   @IsUUID()
   eventId: string;
+
+  @IsNotEmpty()
+  @IsString()
+  groupBy?: 'memberStatus' | 'churchProcess';
 }

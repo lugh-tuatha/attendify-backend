@@ -11,5 +11,9 @@ export class GetTrendsByTimeframeDTO {
 
   @IsNotEmpty()
   @IsString()
-  year: string;
+  from: string;
+
+  @IsNotEmpty()
+  @IsString()
+  to: string;
 }

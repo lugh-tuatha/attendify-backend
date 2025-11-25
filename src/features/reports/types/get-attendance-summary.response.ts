@@ -1,7 +1,7 @@
 import { MemberStatus } from "@prisma/client";
 
-export interface SummaryCategory {
-  name: MemberStatus;
+export interface SummaryCategory<T = string> {
+  name: T | 'UNKNOWN';
   count: number | undefined;
 }
 

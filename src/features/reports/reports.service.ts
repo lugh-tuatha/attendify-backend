@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { GetAttendanceSummaryDTO } from './dto/get-attendance-summary.dto';
 import { PrismaService } from 'src/shared/database/prisma.service';
-import { MemberStatus } from '@prisma/client';
-import { GetAttendanceSummaryResponse } from './types/get-attendance-summary.response';
+import { ChurchProcess, MemberStatus } from '@prisma/client';
+import { GetAttendanceSummaryResponse, SummaryCategory } from './types/get-attendance-summary.response';
 import { GetAttendanceByHierarchyDTO } from './dto/get-attendance-by-hierarchy.dto';
 import { GetAttendanceByHierarchyResponse } from './types/get-attendance-by-hierarchy.response';
 import { GetAttendanceByPrimaryLeaderResponse } from './types/get-attendance-by-primary-leader.response';
 import { GetAttendanceByPrimaryLeaderDTO } from './dto/get-attendance-by-primary-leader.dto';
-import { VIP_STATUSES, ATTENDEE_STATUSES } from 'src/core/attendees/constants/member-statuses';
+import { VIP_STATUSES, ATTENDEE_STATUSES, CHURCH_PROCESSES } from 'src/core/attendees/constants/member-statuses';
+import { AttendanceWithAttendee } from 'src/core/dashboard/types/attendance.types';
 
 @Injectable()
 export class ReportsService {
@@ -18,22 +19,42 @@ export class ReportsService {
 
     const attendance = await this.prisma.attendance.findMany({
       where: { eventId: eventId, occuranceDate: date },
-      select: { attendee: { select: { memberStatus: true, } } }
+      select: { 
+        attendee: { 
+          select: { 
+            memberStatus: true, 
+            churchProcess: true,
+          } 
+        } 
+      }
     })
 
-    const memberStatusCounts = this.groupByMemberStatus(attendance);
+    const groupByField = filters.groupBy || 'memberStatus';
+    const counts = this.groupByField(attendance, groupByField);
+
+    let categories: SummaryCategory<MemberStatus | ChurchProcess>[] = [];
+    let vipsCategories: SummaryCategory<MemberStatus>[] = [];
+
+    if (groupByField === 'memberStatus') {
+      categories = [...ATTENDEE_STATUSES, 'UNKNOWN'].map((status) => ({
+        name: status as MemberStatus | ChurchProcess | 'UNKNOWN',
+        count: counts.get(status) ?? 0,
+      }));
+
+      vipsCategories = [...VIP_STATUSES, 'UNKNOWN'].map((status) => ({
+        name: status as MemberStatus | 'UNKNOWN',
+        count: counts.get(status) ?? 0,
+      }));
+    } else if (groupByField === 'churchProcess') {
+      categories = [...CHURCH_PROCESSES, 'UNKNOWN' as MemberStatus].map((status) => ({
+        name: status,
+        count: counts.get(status) ?? 0,
+      }));
+
+      vipsCategories = [];
+    }
     
-    const attendeesCategories = ATTENDEE_STATUSES.map((status) => ({
-      name: status,
-      count: memberStatusCounts.get(status),
-    }));
-
-    const vipsCategories = VIP_STATUSES.map((status) => ({
-      name: status,
-      count: memberStatusCounts.get(status) ?? 0,
-    }));
-
-    const totalRegulars = attendeesCategories.reduce((sum, c) => sum + (c.count ?? 0), 0);
+    const totalCategories = categories.reduce((sum, c) => sum + (c.count ?? 0), 0);
     const totalVips = vipsCategories.reduce((sum, c) => sum + (c.count ?? 0), 0);
     const totalAttendees = attendance.length;
 
@@ -41,8 +62,8 @@ export class ReportsService {
       date: date,
       summary: {
         attendees: {
-          categories: attendeesCategories,
-          total: totalRegulars
+          categories: categories,
+          total: totalCategories
         },
         vips: {
           categories: vipsCategories,
@@ -83,13 +104,13 @@ export class ReportsService {
       return 0;
     });
 
-    return primaryLeaderAttendance
+    return sortedPrimaryLeaderAttendance;
   }
 
   async getAttendanceByPrimaryLeader(filters: GetAttendanceByPrimaryLeaderDTO): Promise<GetAttendanceByPrimaryLeaderResponse> {
     const { date, eventId, primaryLeaderId } = filters;
 
-    const [primaryLeader, disciples, attendance] = await this.prisma.$transaction([
+    const [primaryLeader, disciples, attendance] = await Promise.all([
       this.prisma.attendees.findUnique({
         where: { id: primaryLeaderId },
         select: {
@@ -128,7 +149,14 @@ export class ReportsService {
             primaryLeaderId: primaryLeaderId
           }
         },
-        select: { attendee: { select: { memberStatus: true, } } }
+        select: { 
+          attendee: { 
+            select: { 
+              memberStatus: true, 
+              churchProcess: true,
+            } 
+          } 
+        }
       })
     ])
 
@@ -136,7 +164,7 @@ export class ReportsService {
       (a, b) => b.attendance.length - a.attendance.length
     );
 
-    const memberStatusCounts = this.groupByMemberStatus(attendance);
+    const memberStatusCounts = this.groupByField(attendance, 'memberStatus');
     
     const attendeesCategories = ATTENDEE_STATUSES.map((status) => ({
       name: status,
@@ -173,14 +201,13 @@ export class ReportsService {
       }
     }
   }
-  
-  private groupByMemberStatus(attendance: { attendee: { memberStatus: MemberStatus | null } | null }[]) {
-    const map = new Map<MemberStatus, number>();
+
+  private groupByField(attendance: AttendanceWithAttendee[], field: 'memberStatus' | 'churchProcess') {
+    const counts = new Map<string, number>();
     for (const record of attendance) {
-      const status = record.attendee?.memberStatus; 
-      if (!status) continue;
-      map.set(status, (map.get(status) ?? 0) + 1);
+      const status = record.attendee?.[field] ?? 'UNKNOWN'; 
+      counts.set(status, (counts.get(status) ?? 0) + 1);
     }
-    return map
+    return counts
   }
 }

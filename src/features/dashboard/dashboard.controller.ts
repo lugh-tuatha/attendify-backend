@@ -6,16 +6,17 @@ import { GetTrendsByTimeframeDTO } from './dto/get-trends-by-timeframe.dto';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  @Get('attendance/trends/:timeframe')
+  @Get('attendees/overview/:organizationId')
+  getAttendeesOverview(
+    @Param('organizationId') organizationId: string,
+  ) {
+    return this.dashboardService.getAttendeesOverview(organizationId);
+  }
+
+  @Get('attendance/trends')
   getTrendsByTimeframe(
-    @Param('timeframe') timeframe: string,
     @Query() filters: GetTrendsByTimeframeDTO
   ) {
-    const validTimeframe = ['Q1', 'FIRST_HALF_YEAR', 'YEARLY']
-    if (!validTimeframe.includes(timeframe)) {
-      throw new Error('Invalid timeframe. Use weekly, monthly, or yearly.');
-    }
-
-    return this.dashboardService.getTrendsByTimeframe(timeframe, filters);
+    return this.dashboardService.getTrendsByTimeframe(filters);
   }
 }

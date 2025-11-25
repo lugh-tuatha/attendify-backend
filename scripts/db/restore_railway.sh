@@ -19,7 +19,7 @@ if [ -z "$DUMP_FILE" ]; then
   exit 1
 fi
 
-# Run restore
+# Run restore./scrips/db/restore_railway.sh ./backups/railway_backup_2025-11-20_19-02-07
 pg_restore \
   -h centerbeam.proxy.rlwy.net \
   -p 20774 \
