@@ -78,7 +78,7 @@ const normalizeChurchProcess = (churchProcess?: string | null): ChurchProcess | 
   if (!churchProcess) return null;
   const cp = churchProcess.trim().toLowerCase();
 
-  if (["pending"].includes(cp)) return "PENDING";
+  if (["pending"].includes(cp)) return "CONSOLIDATION_PROCESS";
   if (["start up lesson"].includes(cp)) return "START_UP_LESSON";
   if (["pre-encounter"].includes(cp)) return "PRE_ENCOUNTER";
   if (["post-encounter"].includes(cp)) return "POST_ENCOUNTER";

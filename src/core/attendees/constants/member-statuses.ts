@@ -16,7 +16,8 @@ export const ATTENDEE_STATUSES: MemberStatus[] = [
 ];
 
 export const CHURCH_PROCESSES: ChurchProcess[] = [
-  'PENDING',
+  'NON_PESOL',
+  'CONSOLIDATION_PROCESS',
   'START_UP_LESSON',
   'PRE_ENCOUNTER',
   'POST_ENCOUNTER',
