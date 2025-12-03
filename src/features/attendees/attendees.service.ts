@@ -120,9 +120,9 @@ export class AttendeesService {
     return attendees
   }
 
-  async getAllAttendeesByChurchHierarchy(churchHierarchy: ChurchHierarchy): Promise<Attendees[]> {
+  async getAllAttendeesByChurchHierarchy(churchHierarchies: ChurchHierarchy[]): Promise<Attendees[]> {
     const attendees = await this.prisma.attendees.findMany({
-      where: { churchHierarchy: churchHierarchy },
+      where: { churchHierarchy: { in: churchHierarchies } },
       orderBy: {
         firstName: 'asc',
       }

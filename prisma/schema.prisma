@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 model Organizations {
@@ -66,6 +68,7 @@ model Events {
   id                 String               @id @default(uuid())
   name               String?
   image              String
+  bannerImageUrl     String?              @map("banner_image_url") // required.
   description        String
   tagline            String
   location           String
@@ -159,7 +162,6 @@ enum MemberStatus {
   FOURTH_TIMER
   REGULAR_ATTENDEE
   REGULAR_DISCIPLE
-  CONSOLIDATION_PROCESS
   REGULAR_STARTUP
   BACK_TO_LIFE
   CELL_MEMBER

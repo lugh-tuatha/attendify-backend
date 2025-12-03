@@ -36,17 +36,17 @@ export class ReportsService {
     let vipsCategories: SummaryCategory<MemberStatus>[] = [];
 
     if (groupByField === 'memberStatus') {
-      categories = [...ATTENDEE_STATUSES, 'UNKNOWN'].map((status) => ({
-        name: status as MemberStatus | ChurchProcess | 'UNKNOWN',
+      categories = [...ATTENDEE_STATUSES, 'INCOMPLETE_DETAILS'].map((status) => ({
+        name: status as MemberStatus | ChurchProcess | 'INCOMPLETE_DETAILS',
         count: counts.get(status) ?? 0,
       }));
 
-      vipsCategories = [...VIP_STATUSES, 'UNKNOWN'].map((status) => ({
-        name: status as MemberStatus | 'UNKNOWN',
+      vipsCategories = [...VIP_STATUSES, 'INCOMPLETE_DETAILS'].map((status) => ({
+        name: status as MemberStatus | 'INCOMPLETE_DETAILS',
         count: counts.get(status) ?? 0,
       }));
     } else if (groupByField === 'churchProcess') {
-      categories = [...CHURCH_PROCESSES, 'UNKNOWN' as MemberStatus].map((status) => ({
+      categories = [...CHURCH_PROCESSES, 'INCOMPLETE_DETAILS' as MemberStatus].map((status) => ({
         name: status,
         count: counts.get(status) ?? 0,
       }));
@@ -205,7 +205,7 @@ export class ReportsService {
   private groupByField(attendance: AttendanceWithAttendee[], field: 'memberStatus' | 'churchProcess') {
     const counts = new Map<string, number>();
     for (const record of attendance) {
-      const status = record.attendee?.[field] ?? 'UNKNOWN'; 
+      const status = record.attendee?.[field] ?? 'INCOMPLETE_DETAILS'; 
       counts.set(status, (counts.get(status) ?? 0) + 1);
     }
     return counts

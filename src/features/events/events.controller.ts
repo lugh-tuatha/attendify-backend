@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { EventCategory, EventRegistrations, Events, Prisma } from '@prisma/client';
 
 import { CreateEventDTO } from './dto/create-event.dto';
+import { UpdateEventDTO } from './dto/update-event.dto';
 
 @Controller('events')
 export class EventsController {
@@ -45,5 +46,14 @@ export class EventsController {
     @Param('slug') slug: string
   ) : Promise<Events> {
     return this.eventsService.getEventBySlug(slug);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update event' })
+  async updateEvent(
+    @Param('id') id: string,
+    @Body() updateEventDTO: UpdateEventDTO
+  ) : Promise<Events> {
+    return this.eventsService.updateEvent(id, updateEventDTO);
   }
 }

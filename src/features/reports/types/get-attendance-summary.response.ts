@@ -1,7 +1,7 @@
 import { MemberStatus } from "@prisma/client";
 
 export interface SummaryCategory<T = string> {
-  name: T | 'UNKNOWN';
+  name: T | 'INCOMPLETE_DETAILS';
   count: number | undefined;
 }
 

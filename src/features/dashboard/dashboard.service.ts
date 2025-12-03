@@ -19,7 +19,7 @@ export class DashboardService {
       'REGULAR_STARTUP',
       'BACK_TO_LIFE',
       'CHILDREN',
-      'UNKNOWN',
+      'INCOMPLETE_DETAILS',
     ]
     
     const results = await this.prisma.attendees.groupBy({
@@ -31,7 +31,7 @@ export class DashboardService {
     });
 
     const mapped = results.map(result => ({
-      name: result.memberStatus ?? 'UNKNOWN',
+      name: result.memberStatus ?? 'INCOMPLETE_DETAILS',
       value: result._count.id,
     }))
     .sort((a, b) => resultsOrder.indexOf(a.name) - resultsOrder.indexOf(b.name));
@@ -45,7 +45,7 @@ export class DashboardService {
   }
 
   async getTrendsByTimeframe(filters: GetTrendsByTimeframeDTO): Promise<any> {
-    const results = await this.prisma.attendance.groupBy({
+    const totalResults = await this.prisma.attendance.groupBy({
       by: ['occuranceDate'],
       where: {
         organizationId: filters.organizationId,
@@ -61,14 +61,48 @@ export class DashboardService {
       }
     });
 
-    const singleSeries = {
+    const vipResults = await this.prisma.attendance.groupBy({
+      by: ['occuranceDate'],
+      where: {
+        organizationId: filters.organizationId,
+        eventId: filters.eventId,
+        attendee: {
+          memberStatus: {
+            in: [
+              'FIRST_TIMER',
+              'SECOND_TIMER',
+              'THIRD_TIMER',
+              'FOURTH_TIMER',
+            ],
+          },
+        },
+        createdAt: {
+          gte: filters.from,
+          lte: filters.to,
+        }
+      },
+      _count: { id: true },
+      orderBy: {
+        occuranceDate: 'asc',
+      }
+    });
+
+    const totalSeries = {
       name: 'Attendees',
-      series: results.map(result => ({
+      series: totalResults.map(result => ({
         name: formatDate(result.occuranceDate, 'MmmDdYyyy'),
         value: result._count.id,
-      }))
-    }
+      })),
+    };
 
-    return [singleSeries];
+    const vipSeries = {
+      name: 'VIP Attendees',
+      series: vipResults.map(result => ({
+        name: formatDate(result.occuranceDate, 'MmmDdYyyy'),
+        value: result._count.id,
+      })),
+    };
+
+    return [totalSeries, vipSeries];
   }
 }

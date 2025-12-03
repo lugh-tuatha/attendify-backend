@@ -3,6 +3,7 @@ import { PrismaService } from 'src/shared/database/prisma.service';
 import { EventCategory, Events, Prisma } from '@prisma/client';
 
 import { CreateEventDTO } from './dto/create-event.dto';
+import { UpdateEventDTO } from './dto/update-event.dto';
 
 @Injectable()
 export class EventsService {
@@ -122,5 +123,14 @@ export class EventsService {
     })
 
     return attendees;
+  }
+
+  async updateEvent(id: string, payload: UpdateEventDTO): Promise<Events> {
+    const event = await this.prisma.events.update({
+      where: { id },
+      data: payload,
+    });
+
+    return event
   }
 }

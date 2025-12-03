@@ -12,6 +12,10 @@ export class CreateEventDTO {
 
   @IsNotEmpty()
   @IsString()
+  bannerImageUrl: string;
+
+  @IsNotEmpty()
+  @IsString()
   description: string;
 
   @IsNotEmpty()

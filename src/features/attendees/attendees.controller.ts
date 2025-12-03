@@ -53,12 +53,16 @@ export class AttendeesController {
     return this.attendeesService.getAllAttendeesByOrganization(organizationId);
   }
 
-  @Get('church-hierarchy/:churchHierarchy')
+  @Get('filter/by-hierarchy')
   @ApiOperation({ summary: 'Get all attendees by church hierarchy' })
   async getAllAttendeesByChurchHierarchy(
-    @Param('churchHierarchy') churchHierarchy: ChurchHierarchy
+    @Query('roles') roles: string,
   ) : Promise<Attendees[]> {
-    return this.attendeesService.getAllAttendeesByChurchHierarchy(churchHierarchy);
+    const roleList = roles
+      .split(',')
+      .map(h => h.trim() as ChurchHierarchy);
+
+    return this.attendeesService.getAllAttendeesByChurchHierarchy(roleList);
   }
 
   @Patch(':id')
